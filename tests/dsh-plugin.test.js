@@ -277,7 +277,7 @@ test("market/index.json：format 1 必填字段齐全", function () {
     assert(typeof v.publishTimestamp === "number" && v.publishTimestamp > 0, "publishTimestamp 需 Unix 秒");
     assert(v.source && (v.source.type === "npm" || v.source.type === "git"), "source 类型合法");
     if (v.source.type === "git") {
-      assert(/^https:\/\//.test(v.source.url) && /^[0-9a-f]{40}$/.test(v.commit), "git 源需 https url + 40 位 commit");
+      assert(/^https:\/\//.test(v.source.url) && /^[0-9a-f]{40}$/.test(v.source.commit), "git 源需 https url + 40 位 commit");
     }
     if (v.engines) assert(typeof v.engines.dsh === "string", "engines.dsh 需为字符串");
   });

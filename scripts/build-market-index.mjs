@@ -22,7 +22,7 @@ async function main() {
   const repoUrl = `https://github.com/${OWNER_PLACEHOLDER}/dsh-plugin-optimize-ai-reply`;
   const publishTimestamp = Math.floor(Date.parse("2026-10-31T20:30:00+08:00") / 1000);
   // 发布提交（含本版本全部源码）；发版流程：提交代码 → 取 commit 哈希填这里 → 重新生成索引
-  const releaseCommit = "0000000000000000000000000000000000000000";
+  const releaseCommit = "b46ff9664cdc304a4d7f06b969100adcab029781";
 
   const index = {
     format: 1,
