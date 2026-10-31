@@ -226,19 +226,24 @@ function buildTools(config) {
     tool({
       name: "optimize_reply_brief",
       description:
-        "生成「优化 AI 回复」改写任务书：硬约束 + 本次命中的特征清单 + 输出格式（提示词 B）。" +
-        "若返回「无需改写」则原文已经达标。否则你（模型）就是改写器：按任务书改写后必须调用 optimize_reply_check 校验，" +
-        "不通过就回退原文。Produces the rewrite brief (hard constraints + targeted hits); you perform the rewrite, then verify.",
+        "生成「优化 AI 回复」改写任务书（提示词 B）：硬约束 + 人类语言逻辑改写法 + 本次命中的特征清单 + 改写强度 + 输出格式。" +
+        "若返回「无需改写」则原文已经达标。否则你（模型）就是改写器：按任务书重写语言逻辑，改写后必须调用 optimize_reply_check 校验，" +
+        "不通过就回退原文。Produces the rewrite brief (hard constraints + human-language-logic rewrite method + targeted hits + strength); you perform the rewrite, then verify.",
       parameters: {
         text: { type: "string", required: true, description: "原文" },
         register: { type: "string", description: "文体，同 optimize_reply_scan" },
         model: { type: "string", description: "出稿模型 id，同 optimize_reply_scan" },
-        threshold: { type: "number", description: "触发阈值，默认 2" }
+        threshold: { type: "number", description: "触发阈值，默认 2" },
+        strength: {
+          type: "string",
+          description: "改写强度：safe（只动命中句）|strong（重构命中段落，默认）|max（整段语言逻辑重写）；不传取插件配置"
+        }
       },
       output: TEXT_OUTPUT,
       async execute(args) {
         var register = args.register || defaults.register;
         var model = args.model || defaults.model;
+        var strength = Prompts.normalizeStrength(args.strength || readValue(config.rewriteStrength));
         var scanRes = Scan.scan(args.text, register, model, rules, {
           thresholdMultiplier: args.threshold || defaults.threshold
         });
@@ -248,10 +253,10 @@ function buildTools(config) {
         if (!targets.length) {
           return [
             "无需改写：本次没有达到阈值的特征（" + scanRes.watchlist.length + " 项观察项未达阈值，默认不改）。",
-            "按「少改」原则请保持原文逐字不变。"
+            "没有任何命中项就不要动文本——「少改」是第一原则，只汇报扫描摘要即可。"
           ].join("\n");
         }
-        var brief = Prompts.buildRewriteMessages(args.text, targets, register, model, {});
+        var brief = Prompts.buildRewriteMessages(args.text, targets, register, model, { strength: strength });
         return [
           brief,
           "",
@@ -260,7 +265,8 @@ function buildTools(config) {
           "1. 输出终稿文本（只输出终稿，不要解释）；",
           "2. 立即调用 optimize_reply_check（before=原文，after=你的终稿）；",
           "3. 结果为 revert 时，必须放弃改动、原样回退原文，并转告原因；",
-          "4. 严禁在改写中引入原文没有的事实、数字、经历（信息守恒）。"
+          "4. 严禁在改写中引入原文没有的事实、数字、经历（信息守恒）；",
+          "5. 改写的是「说话的思路」：按任务书第二节重排信息流、拆合句子、换动词与连接，不要只把词表上的词换成同义词。"
         ].join("\n");
       }
     })

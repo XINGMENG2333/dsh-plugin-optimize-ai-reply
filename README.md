@@ -68,6 +68,7 @@ optimize_reply_scan(text)                    → 有偏高/高项？
   config:
     enabled: true                 # 总开关（一般在界面里切换，见下一节）
     defaultRegister: qa          # qa|social|script|popular|formal|academic（文体分档）
+    rewriteStrength: max         # safe|strong|max（改写力度，默认 max，见下）
     defaultModel: unknown        # gpt|claude|deepseek|gemini|kimi|qwen|doubao|…
     thresholdMultiplier: 2       # 密度 ≥ 人类基线 × N 判「偏高」
     showWatchlist: true          # 是否输出【观察项】（命中未达阈值，默认不改）
@@ -75,6 +76,18 @@ optimize_reply_scan(text)                    → 有偏高/高项？
 ```
 
 配置实现 Standard Schema v1（[src/dsh/schema.js](src/dsh/schema.js)），非法值在插件装载期即报错。
+
+### 改写强度
+
+改写任务书按三档执行，默认 **max**；调用 `optimize_reply_brief` 时也可用 `strength` 参数临时覆盖：
+
+| 档位 | 行为 | 适用 |
+|---|---|---|
+| `safe` | 只动命中清单点名的句子，其余逐字保留，一段不超过 3 句 | 公文、合同、学术等不能动结构 |
+| `strong` | 命中句改到位，同段同类套话顺手清理；允许拆句、并句、调句序、换连接与动词；只删空话句 | 想少动结构、保留原文骨架 |
+| `max`（默认） | 在信息守恒前提下整段重写语言逻辑：重排信息流、多句合一、一句拆多句 | 日常改写、营销文案、科普、社媒；想要彻底的「人话版」 |
+
+三档共用同一条底线：事实、论断强度、安全信息不变；`optimize_reply_check` 验收不通过一律回退原文。
 
 ## 界面开关（DSH 内置）
 

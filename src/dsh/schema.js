@@ -111,6 +111,12 @@ var FIELDS = {
     default: "qa",
     desc: "默认文体档位（问答对话/社媒/口播台词/科普长文/正式文书/学术）"
   },
+  rewriteStrength: {
+    type: "string",
+    enum: ["safe", "strong", "max"],
+    default: "max",
+    desc: "改写强度：safe 只动命中句｜strong 重构命中段落｜max 整段语言逻辑重写（默认）"
+  },
   defaultModel: {
     type: "string",
     default: "unknown",

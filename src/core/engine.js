@@ -300,17 +300,63 @@
   }
 
   /** 专名抽取：书名号、机构/药物后缀、英文大写序列。 */
+  /** 机构名 = 2–10 个汉字前缀 + 机构后缀；下面是常见文言虚词/代词，出现即判定为普通行文而非机构名。 */
+  var PROSE_CHARS = /[在是了的地与或对把被从向给让使而也都就还又很最更不没无这那其该我你他她它们此每某两几多少太第等有]/;
+
+  /** 去掉机构名尾部常见法律形式，避免「有限/股份」里的虚词误伤。 */
+  function stripLegalForm(prefix) {
+    return prefix.replace(/(?:有限责任|股份有限|有限|责任|控股|实业)$/, "");
+  }
+
+  /**
+   * 归一化专名前缀：先剥掉句首虚词与代词（"在北京协和" → "北京协和"），
+   * 再排除仍是普通行文的前缀（"本季度我们在" → 空、"我们在" → 空）。
+   * @returns 归一化后的名字前缀；不像专名时返回空串。
+   */
+  function normalizeNamePrefix(prefix) {
+    var p = prefix;
+    while (p.length && PROSE_CHARS.test(p.charAt(0))) p = p.slice(1);
+    p = stripLegalForm(p);
+    if (p.length < 2) return "";
+    if (PROSE_CHARS.test(p)) return "";
+    return p;
+  }
+
+  /** 按后缀抽取专名：只保留归一化后仍像名字的匹配。 */
+  function matchContentNames(text, re, suffixRe) {
+    var out = [];
+    var matches = text.match(re) || [];
+    for (var i = 0; i < matches.length; i++) {
+      var sm = matches[i].match(suffixRe);
+      if (!sm) continue;
+      var suffix = sm[0];
+      var prefix = matches[i].slice(0, matches[i].length - suffix.length);
+      var name = normalizeNamePrefix(prefix);
+      if (name) out.push(name + suffix);
+    }
+    return out;
+  }
+
   function extractProperNouns(text) {
     var out = [];
     var s = String(text);
     var book = s.match(/《[^》\n]{1,60}》/g);
     if (book) out = out.concat(book);
-    var org = s.match(/[\u4e00-\u9fff]{2,10}(?:医院|大学|学院|研究所|研究院|中心|公司|集团|协会|委员会|银行|法院|诊所|实验室|工作室|基金会)/g);
-    if (org) out = out.concat(org);
-    var doc = s.match(/[\u4e00-\u9fffA-Za-z0-9]{2,14}(?:指南|共识|标准|法案|条例|规范|白皮书|报告|公报)/g);
-    if (doc) out = out.concat(doc);
-    var drug = s.match(/[\u4e00-\u9fffA-Za-z]{2,8}(?:片|胶囊|颗粒|注射液|口服液|软膏|滴丸|喷雾剂|栓剂)/g);
-    if (drug) out = out.concat(drug);
+    out = out.concat(matchContentNames(
+      s,
+      /[\u4e00-\u9fff]{2,10}(?:医院|大学|学院|研究所|研究院|中心|公司|集团|协会|委员会|银行|法院|诊所|实验室|工作室|基金会)/g,
+      /(?:医院|大学|学院|研究所|研究院|中心|公司|集团|协会|委员会|银行|法院|诊所|实验室|工作室|基金会)$/
+    ));
+    out = out.concat(matchContentNames(
+      s,
+      /[\u4e00-\u9fffA-Za-z0-9]{2,14}(?:指南|共识|标准|法案|条例|规范|白皮书|报告|公报)/g,
+      /(?:指南|共识|标准|法案|条例|规范|白皮书|报告|公报)$/
+    ));
+    out = out.concat(matchContentNames(
+      s,
+      /[\u4e00-\u9fffA-Za-z]{2,8}(?:片|胶囊|颗粒|注射液|口服液|软膏|滴丸|喷雾剂|栓剂)/g,
+      /(?:片|胶囊|颗粒|注射液|口服液|软膏|滴丸|喷雾剂|栓剂)$/
+    ));
     // 英文大写序列（≥2 词，或非句首单个专有词）
     var eng = s.match(/\b[A-Z][A-Za-z]+(?:\s+[A-Z][A-Za-z]+)+\b/g);
     if (eng) out = out.concat(eng);

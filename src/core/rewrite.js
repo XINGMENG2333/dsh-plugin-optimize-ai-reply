@@ -358,7 +358,7 @@
 
     // 占位符保护
     var protectedRes = usePlaceholderProtection(opts) ? protectFacts(original) : { text: original, tokens: [] };
-    var prompt = Prompts.buildRewriteMessages(protectedRes.text, targets, register, model, { extraNote: opts.extraNote });
+    var prompt = Prompts.buildRewriteMessages(protectedRes.text, targets, register, model, { extraNote: opts.extraNote, strength: opts.strength });
 
     var modelPromise;
     if (opts.mockRewriter) {

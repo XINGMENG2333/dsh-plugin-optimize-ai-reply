@@ -159,7 +159,7 @@ test("optimize_reply_scan：返回密度报告且含基线字段", function () {
     });
 });
 
-test("optimize_reply_brief：干净文本 → 无需改写；命中文本 → 含硬约束与工作流", function () {
+test("optimize_reply_brief：干净文本 → 无需改写；命中文本 → 含硬约束、语言逻辑与强度", function () {
   var ctx = fakeCtx();
   plugin.apply(ctx, undefined);
   var brief = toolByName(ctx, "optimize_reply_brief");
@@ -173,7 +173,27 @@ test("optimize_reply_brief：干净文本 → 无需改写；命中文本 → �
       assert(dirty.indexOf("信息守恒") >= 0, "应含硬约束（信息守恒）");
       assert(dirty.indexOf("optimize_reply_check") >= 0, "应要求调用校验工具");
       assert(dirty.indexOf("回退") >= 0, "应回退规则");
+      assert(dirty.indexOf("人类语言逻辑") >= 0, "应含人类语言逻辑章节");
+      assert(dirty.indexOf("【改写强度】max") >= 0, "默认强度应为 max");
+      assert(dirty.indexOf("信息流") >= 0, "应要求重排信息流");
+      return brief.execute({
+        text: "综上所述，这一突破标志着行业进入了新的高度。说白了，这不是效率问题，而是流程设计的问题。",
+        strength: "max"
+      });
+    })
+    .then(function (maxBrief) {
+      assert(maxBrief.indexOf("【改写强度】max") >= 0, "应按参数输出 max 档");
+      assert(maxBrief.indexOf("重构命中段落") >= 0, "max 档应说明可整段重写");
     });
+});
+
+test("配置：rewriteStrength 默认 max，非法值拒绝", function () {
+  var ok = plugin.Config["~standard"].validate(undefined);
+  assertEqual(ok.value.rewriteStrength, "max");
+  var custom = plugin.Config["~standard"].validate({ rewriteStrength: "safe" });
+  assertEqual(custom.value.rewriteStrength, "safe");
+  var bad = plugin.Config["~standard"].validate({ rewriteStrength: "ultra" });
+  assert(bad.issues && bad.issues.length > 0, "非法强度应报错");
 });
 
 test("optimize_reply_verify / optimize_reply_rescan / optimize_reply_check：好改写 accept、坏改写 revert", function () {

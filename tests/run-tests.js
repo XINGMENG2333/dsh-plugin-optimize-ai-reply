@@ -465,6 +465,34 @@ test("prompt A/B 逐字内嵌", function () {
   assert(Prompts.PROMPT_B.indexOf("信息守恒") > 0 && Prompts.PROMPT_B.indexOf("禁止清单") > 0, "硬约束齐全");
 });
 
+test("改写强度：三档齐全、默认 max、非法值回落默认档", function () {
+  assertEqual(Prompts.STRENGTHS.join(","), "safe,strong,max");
+  assertEqual(Prompts.DEFAULT_STRENGTH, "max");
+  assertEqual(Prompts.normalizeStrength("safe"), "safe");
+  assertEqual(Prompts.normalizeStrength("max"), "max");
+  assertEqual(Prompts.normalizeStrength("ultra"), "max", "非法档位应回落默认档");
+  assertEqual(Prompts.normalizeStrength(undefined), "max");
+  ["safe", "strong", "max"].forEach(function (s) {
+    assert(Prompts.STRENGTH_NOTES[s], "缺少强度说明：" + s);
+  });
+});
+
+test("改写强度：任务书注入档位与人类语言逻辑要求", function () {
+  var targets = [{ id: "B4", name: "段末总结", hits: 1, density: 4.7, human: 0.3, ratio: 3.1, advice: "删除空总结" }];
+  var brief = Prompts.buildRewriteMessages("原文。", targets, "qa", "unknown", { strength: "max" });
+  assert(brief.indexOf("【改写强度】max") >= 0, "应标注档位");
+  assert(brief.indexOf(Prompts.STRENGTH_NOTES.max) >= 0, "应拼接档位说明");
+  assert(brief.indexOf("人类语言逻辑") >= 0, "应含语言逻辑章节");
+  assert(brief.indexOf("信息流") >= 0 && brief.indexOf("信息块") >= 0, "应含信息流与句子要求");
+  assert(brief.indexOf("不是把词表上的词换成同义词") >= 0, "应禁止词表式替换");
+  // safe 档的任务书措辞更保守
+  var safe = Prompts.buildRewriteMessages("原文。", targets, "qa", "unknown", { strength: "safe" });
+  assert(safe.indexOf("只处理这些，其余句子逐字保留") >= 0, "safe 档应要求逐字保留");
+  // 非法档位回落默认档
+  var fallback = Prompts.buildRewriteMessages("原文。", targets, "qa", "unknown", { strength: "bogus" });
+  assert(fallback.indexOf("【改写强度】max") >= 0, "非法档位应回落 max");
+});
+
 // ---------- 汇总（先等异步用例） ----------
 (function runAsync() {
   var chain = Promise.resolve();
