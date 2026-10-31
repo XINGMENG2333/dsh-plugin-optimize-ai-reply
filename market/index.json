@@ -80,12 +80,12 @@
       },
       "versions": [
         {
-          "version": "2.4.0",
-          "publishTimestamp": 1793474400,
+          "version": "2.4.1",
+          "publishTimestamp": 1793473500,
           "source": {
             "type": "git",
             "url": "https://github.com/XINGMENG2333/dsh-plugin-optimize-ai-reply",
-            "commit": "ff60b64e9572ad15d0fa92da025f20e378f25d4d"
+            "commit": "4523c4632f00b4e531b83fb0f02df38e33d87c39"
           },
           "engines": {
             "dsh": ">=0.2.0"
