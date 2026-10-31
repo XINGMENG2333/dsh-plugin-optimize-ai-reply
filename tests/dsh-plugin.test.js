@@ -301,7 +301,7 @@ test("market/README.md：三条收录路径齐全", function () {
   assert(md.indexOf("dsh-plugin") >= 0, "应含 topic 指引");
   assert(md.indexOf("awesome-dsh-plugin") >= 0, "应含精选列表路径");
   assert(md.indexOf("index.json") >= 0, "应含市场索引路径");
-  assert(md.indexOf("your-github-id") >= 0, "应含占位符替换提醒");
+  assert(md.indexOf("prepare-listing.mjs") >= 0, "应含占位符替换指引");
 });
 
 test("上架包：LISTING-KIT.md 三步 + PR 文案 + 验证记录", function () {

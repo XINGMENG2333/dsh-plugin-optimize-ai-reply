@@ -46,10 +46,9 @@ dsh plugin --profile demo add ./optimize-ai-reply
 dsh plugin --profile demo add ./dsh-plugin-optimize-ai-reply-2.1.0.tgz
 ```
 
-## 发布清单（打 tag 前把占位符换掉）
+## 发布清单（换账号/发版时）
 
-- [ ] `package.json` 的 `repository` / `homepage` 中 `XINGMENG2333` → 真实账号
-- [ ] `scripts/build-market-index.mjs` 的 `OWNER_PLACEHOLDER` → 真实账号，重跑生成 `market/index.json`
-- [ ] `market/awesome-dsh-plugin.yml` 的 `url` / `name` / `tarball` 中 `XINGMENG2333` → 真实账号
+- [ ] 一键替换：`node scripts/prepare-listing.mjs --owner <GitHub账号>`（package.json、索引生成器、awesome 提交文件、市场索引全自动更新）
 - [ ] `npm publish`（或走 Release 工作流的自动发布）
 - [ ] 打 GitHub topic：`dsh-plugin` `dsh` `deepseek-harness`
+- [ ] 完整上架步骤见 [LISTING-KIT.md](LISTING-KIT.md)
