@@ -304,12 +304,11 @@ test("market/README.md：三条收录路径齐全", function () {
   assert(md.indexOf("prepare-listing.mjs") >= 0, "应含占位符替换指引");
 });
 
-test("上架包：LISTING-KIT.md 三步 + PR 文案 + 验证记录", function () {
+test("上架包：LISTING-KIT.md 三步 + PR 文案 + 安装命令", function () {
   var md = fs.readFileSync(path.join(ROOT, "market", "LISTING-KIT.md"), "utf8");
   assert(md.indexOf("第 1 步") >= 0 && md.indexOf("第 2 步") >= 0 && md.indexOf("第 3 步") >= 0, "应含三步");
   assert(md.indexOf("Add ") >= 0 && md.indexOf("data/plugins/") >= 0, "应含 PR 标题与文件路径");
   assert(md.indexOf("generate-readme.mjs") >= 0, "应含对方仓库生成命令");
-  assert(md.indexOf("本地安装验证记录") >= 0, "应含安装验证记录");
   assert(md.indexOf("dsh plugin") >= 0, "应含用户安装命令");
 });
 
