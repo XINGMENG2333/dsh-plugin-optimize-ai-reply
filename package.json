@@ -1,6 +1,6 @@
 {
   "name": "dsh-plugin-optimize-ai-reply",
-  "version": "2.4.0",
+  "version": "2.4.1",
   "description": "DeepSeek Harness plugin that optimizes AI replies and strips AI-flavor from LLM text: local density scanner, five-layer fact/strength/safety verification, closed-loop rescan. 优化 AI 回复：本地密度扫描 + 五层校验改写 + 闭环复扫，事实/强度/安全零损失。",
   "keywords": [
     "dsh-plugin",

@@ -38,7 +38,7 @@
     "13. 不主动追加“如果你需要我还可以…”这类附赠内容。",
     "14. 信息按人的认知顺序走：先场景或结论，再原因与边界；不写“背景—意义—分点—总结”的公文骨架。",
     "15. 详略不均才像人：信息密集处写实，套话处直接停；不要每段一样长、一样工整。"
-  ].join("\\n");
+  ].join("\n");
 
   // 提示词 B：改写侧（L3 使用）
   var PROMPT_B = [
@@ -109,7 +109,7 @@
     "8 信息流是不是按人的认知顺序走的？有没有留下“背景—意义—分点—总结”的骨架？",
     "9 句子里还有没有一句话塞两三个动作的？拆开了吗？",
     "10 删的是不是都是空话？实义信息有没有被顺手删掉？"
-  ].join("\\n");
+  ].join("\n");
 
   /** 强度对应的执行说明（拼进改写请求，告诉模型这一档具体放开到哪里）。 */
   var STRENGTH_NOTES = {
@@ -124,7 +124,7 @@
 
   /** L1：生成侧 system prompt（可直接注入）。 */
   function buildGenerationSystemPrompt(userTask) {
-    return PROMPT_A + (userTask ? "\\n\\n# 用户任务\\n" + userTask : "");
+    return PROMPT_A + (userTask ? "\n\n# 用户任务\n" + userTask : "");
   }
 
   /** L3：改写请求组装（只传本次命中的特征，不塞全量规则表）。 */
@@ -161,7 +161,7 @@
     if (options.extraNote) lines.push("【补充】" + options.extraNote);
     lines.push("");
     lines.push("现在输出：［终稿］+ 改动说明 +【观察项】+【需作者确认】+【待补】。");
-    return lines.join("\\n");
+    return lines.join("\n");
   }
 
   return {
