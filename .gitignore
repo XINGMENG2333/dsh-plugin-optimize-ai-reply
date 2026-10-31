@@ -1,0 +1,11 @@
+# 构建产物
+dist/
+*.tgz
+*.zip
+node_modules/
+.plugin-market-cache/
+
+# 系统/编辑器
+.DS_Store
+Thumbs.db
+*.log
