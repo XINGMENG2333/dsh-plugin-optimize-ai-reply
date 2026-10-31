@@ -1,6 +1,6 @@
 # 市场与收录（market/）
 
-本目录是「去 AI 味」插件进入 **DSH 插件市场** 与 **GitHub 生态** 的收录材料。三条路径按省事程度排序：
+本目录是「优化 AI 回复」插件进入 **DSH 插件市场** 与 **GitHub 生态** 的收录材料。三条路径按省事程度排序：
 
 ## 路径一：GitHub topic 自动收录（最快，推荐先做）
 
@@ -12,13 +12,13 @@
 `dshmarket`（官方市场插件）只允许安装精选列表内的来源，收录方法是向
 [awesome-dsh-plugin/awesome-dsh-plugin](https://github.com/awesome-dsh-plugin/awesome-dsh-plugin) 提一个 PR：
 
-1. 复制本目录的 [awesome-dsh-plugin.yml](awesome-dsh-plugin.yml) 为 `data/plugins/<你的GitHub账号>__dsh-plugin-deai-tone.yml`
+1. 复制本目录的 [awesome-dsh-plugin.yml](awesome-dsh-plugin.yml) 为 `data/plugins/<你的GitHub账号>__dsh-plugin-optimize-ai-reply.yml`
    （文件名规则：`owner__repo.yml`，必须与 `url` 字段一致；先替换 yml 里的 `your-github-id`）。
 2. 在对方仓库执行 `node scripts/generate-readme.mjs`，把重新生成的 README 一并提交。
 3. 一个 PR 只加这一个文件。描述必须单行；含 `: ` 的行要加引号；`description.en` 必须以句号结尾。
 
 > 前置条件（对方校验）：仓库 `package.json` 必须含 `dsh.bundle`（本仓库 ✓），浏览器 UI 组件才需要 `dsh.client`（本插件不需要）。
-> 选填 `tarball` 指向 GitHub Release 的预构建包（Release 工作流会自动上传 `dsh-plugin-deai-tone.tgz`）。
+> 选填 `tarball` 指向 GitHub Release 的预构建包（Release 工作流会自动上传 `dsh-plugin-optimize-ai-reply.tgz`）。
 
 ## 路径三：自托管/提交市场索引（format 1）
 
@@ -33,14 +33,14 @@
 
 ```bash
 # 从 npm（发布后）
-dsh plugin --profile demo add dsh-plugin-deai-tone
+dsh plugin --profile demo add dsh-plugin-optimize-ai-reply
 
 # 从 GitHub（无需 npm 发布；首次需放行 prepare 构建）
-dsh plugin --profile demo add github:your-github-id/dsh-plugin-deai-tone
+dsh plugin --profile demo add github:your-github-id/dsh-plugin-optimize-ai-reply
 
 # 本地目录 / 预构建 tarball
-dsh plugin --profile demo add ./deai-plugin
-dsh plugin --profile demo add ./dsh-plugin-deai-tone-2.1.0.tgz
+dsh plugin --profile demo add ./optimize-ai-reply
+dsh plugin --profile demo add ./dsh-plugin-optimize-ai-reply-2.1.0.tgz
 ```
 
 ## 发布清单（打 tag 前把占位符换掉）

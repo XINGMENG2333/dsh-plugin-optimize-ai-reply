@@ -2,7 +2,7 @@ name: Release
 
 # 打 v* tag（或发布 GitHub Release）时：
 #  1. 全量测试
-#  2. pnpm pack 产出 dsh-plugin-deai-tone.tgz（改名后上传 Release，供 awesome-dsh-plugin 的 tarball 字段使用）
+#  2. pnpm pack 产出 dsh-plugin-optimize-ai-reply.tgz（改名后上传 Release，供 awesome-dsh-plugin 的 tarball 字段使用）
 #  3. 上传 Chrome 扩展 zip
 #  4. 配置了 NPM_TOKEN secret 则自动 npm publish（dsh-market 的 npm 源即刻可用）
 on:
@@ -34,14 +34,14 @@ jobs:
       - name: Pack DSH bundle tarball
         run: |
           npm pack
-          mv dsh-plugin-deai-tone-*.tgz dsh-plugin-deai-tone.tgz
+          mv dsh-plugin-optimize-ai-reply-*.tgz dsh-plugin-optimize-ai-reply.tgz
 
       - name: Upload release assets
         uses: softprops/action-gh-release@v2
         with:
           files: |
-            dsh-plugin-deai-tone.tgz
-            deai-plugin-v*.zip
+            dsh-plugin-optimize-ai-reply.tgz
+            optimize-ai-reply-v*.zip
             market/index.json
 
       - name: Publish to npm (optional, needs NPM_TOKEN secret)

@@ -1,9 +1,15 @@
 # Changelog
 
+## 2.2.0 — 2026-10-31 · 更名为「优化 AI 回复」
+
+- 产品名、npm 包名、DSH 行 id、7 个工具名整体更名：**优化 AI 回复（Optimize AI Reply）**，包名 `dsh-plugin-optimize-ai-reply`，工具前缀 `optimize_reply_*`。
+- 市场索引、awesome-dsh-plugin 提交文件、Chrome 扩展、demo 页、CI/Release 资产名同步更新。
+- 内嵌提示词 A/B 为规格逐字内容，原文保留不动。
+
 ## 2.1.0 — 2026-10-31 · DeepSeek Harness 插件化
 
 - **DSH bundle**：`package.json` 声明 `dsh.bundle` + `cordis.patch.yml` + 双入口（`index.js` CJS / `index.mjs` ESM），`engines.dsh: ">=0.2.0"`，可 `dsh plugin add` 安装。
-- **7 个 harness 工具**（`src/dsh/tools.js`）：`deai_scan`（L2 本地扫描）、`deai_rewrite_brief`（L3 改写任务书）、`deai_verify`（L4 五层校验）、`deai_rescan`（L5 闭环复扫）、`deai_check_rewrite`（L4+L5 一站式验收）、`deai_style_prompt`（L1 生成侧提示词）、`deai_rulecheck`（规则体检）。
+- **7 个 harness 工具**（`src/dsh/tools.js`）：`optimize_reply_scan`（L2 本地扫描）、`optimize_reply_brief`（L3 改写任务书）、`optimize_reply_verify`（L4 五层校验）、`optimize_reply_rescan`（L5 闭环复扫）、`optimize_reply_check`（L4+L5 一站式验收）、`optimize_reply_style_prompt`（L1 生成侧提示词）、`optimize_reply_rulecheck`（规则体检）。
 - **配置 Standard Schema**（`src/dsh/schema.js`）：defaultRegister / defaultModel / thresholdMultiplier / showWatchlist / disabledRules，零依赖实现 Standard Schema v1。
 - **市场收录材料**（`market/`）：format 1 市场索引生成器、awesome-dsh-plugin 提交文件、官方生成器 plugins.txt、收录指南。
 - **GitHub 工程化**：CI（Node 20/24 三套测试 + 市场索引漂移检查）、Release 工作流（npm publish + tarball + Chrome zip 自动上传）。

@@ -1,7 +1,7 @@
 /**
  * tools.js —— DSH 工具层：把 L0–L6 流水线注册为 harness 工具
  * 设计：agent 自己做改写（L3），插件用确定性工具把住三道关：
- *   deai_scan（L2 密度扫描）→ agent 按 deai_rewrite_brief 改写 → deai_check_rewrite（L4 校验 + L5 闭环）
+ *   optimize_reply_scan（L2 密度扫描）→ agent 按 optimize_reply_brief 改写 → optimize_reply_check（L4 校验 + L5 闭环）
  * 全部本地零网络；不引入第三方「AI 检测器」；不让模型给文本打「AI 味分」。
  */
 "use strict";
@@ -104,7 +104,7 @@ function buildTools(config) {
   // ---------- L2 本地扫描 ----------
   tools.push(
     defineTool({
-      name: "deai_scan",
+      name: "optimize_reply_scan",
       description:
         "本地扫描文本的 AI 写作特征（密度对照人类基线，零网络、纯统计）。" +
         "返回每项特征的命中数/密度/人类基线/AI 基线/倍率/判断（正常·观察项·偏高·高）。" +
@@ -140,15 +140,15 @@ function buildTools(config) {
   // ---------- L3 改写任务书 ----------
   tools.push(
     defineTool({
-      name: "deai_rewrite_brief",
+      name: "optimize_reply_brief",
       description:
-        "生成「去 AI 味」改写任务书：硬约束 + 本次命中的特征清单 + 输出格式（提示词 B）。" +
-        "若返回「无需改写」则原文已经达标。否则你（模型）就是改写器：按任务书改写后必须调用 deai_check_rewrite 校验，" +
+        "生成「优化 AI 回复」改写任务书：硬约束 + 本次命中的特征清单 + 输出格式（提示词 B）。" +
+        "若返回「无需改写」则原文已经达标。否则你（模型）就是改写器：按任务书改写后必须调用 optimize_reply_check 校验，" +
         "不通过就回退原文。Produces the rewrite brief (hard constraints + targeted hits); you perform the rewrite, then verify.",
       parameters: {
         text: { type: "string", required: true, description: "原文" },
-        register: { type: "string", required: false, description: "文体，同 deai_scan" },
-        model: { type: "string", required: false, description: "出稿模型 id，同 deai_scan" },
+        register: { type: "string", required: false, description: "文体，同 optimize_reply_scan" },
+        model: { type: "string", required: false, description: "出稿模型 id，同 optimize_reply_scan" },
         threshold: { type: "number", required: false, description: "触发阈值，默认 2" }
       },
       output: TEXT_OUTPUT,
@@ -174,7 +174,7 @@ function buildTools(config) {
           "——————",
           "【工作流要求】你改写完成后：",
           "1. 输出终稿文本（只输出终稿，不要解释）；",
-          "2. 立即调用 deai_check_rewrite（before=原文，after=你的终稿）；",
+          "2. 立即调用 optimize_reply_check（before=原文，after=你的终稿）；",
           "3. 结果为 revert 时，必须放弃改动、原样回退原文，并转告原因；",
           "4. 严禁在改写中引入原文没有的事实、数字、经历（信息守恒）。"
         ].join("\n");
@@ -185,7 +185,7 @@ function buildTools(config) {
   // ---------- L4 三层校验 ----------
   tools.push(
     defineTool({
-      name: "deai_verify",
+      name: "optimize_reply_verify",
       description:
         "五层校验改写结果：事实（数字/URL/代码/引文/专名）、论断强度与主次、安全信息、结构。" +
         "任一违规即 fail。Deterministic guard: verify(before, after) — fails on any fact/strength/safety drift.",
@@ -204,15 +204,15 @@ function buildTools(config) {
   // ---------- L5 闭环复扫 ----------
   tools.push(
     defineTool({
-      name: "deai_rescan",
+      name: "optimize_reply_rescan",
       description:
         "闭环复扫：改写结果重新扫描，要求被处理项密度下降且不引入新的「偏高/高」项（如把破折号换成「说白了」会被拦下）。" +
         "Closed loop: the rewrite must reduce targeted densities and introduce no new elevated traits.",
       parameters: {
         before: { type: "string", required: true, description: "原文" },
         after: { type: "string", required: true, description: "改写后文本" },
-        register: { type: "string", required: false, description: "文体，同 deai_scan" },
-        model: { type: "string", required: false, description: "出稿模型 id，同 deai_scan" }
+        register: { type: "string", required: false, description: "文体，同 optimize_reply_scan" },
+        model: { type: "string", required: false, description: "出稿模型 id，同 optimize_reply_scan" }
       },
       output: TEXT_OUTPUT,
       async execute(args) {
@@ -238,15 +238,15 @@ function buildTools(config) {
   // ---------- L4 + L5 合一（推荐工作流用） ----------
   tools.push(
     defineTool({
-      name: "deai_check_rewrite",
+      name: "optimize_reply_check",
       description:
-        "一站式验收改写：内部执行 deai_verify + deai_rescan，返回 action=accept 或 revert 及原因。" +
+        "一站式验收改写：内部执行 optimize_reply_verify + optimize_reply_rescan，返回 action=accept 或 revert 及原因。" +
         "改写后必调；revert 时必须回退原文。One call after rewriting: accept or revert with reasons.",
       parameters: {
         before: { type: "string", required: true, description: "原文" },
         after: { type: "string", required: true, description: "改写后文本" },
-        register: { type: "string", required: false, description: "文体，同 deai_scan" },
-        model: { type: "string", required: false, description: "出稿模型 id，同 deai_scan" }
+        register: { type: "string", required: false, description: "文体，同 optimize_reply_scan" },
+        model: { type: "string", required: false, description: "出稿模型 id，同 optimize_reply_scan" }
       },
       output: TEXT_OUTPUT,
       async execute(args) {
@@ -285,7 +285,7 @@ function buildTools(config) {
   // ---------- L1 生成侧提示词 ----------
   tools.push(
     defineTool({
-      name: "deai_style_prompt",
+      name: "optimize_reply_style_prompt",
       description:
         "返回「生成侧」写作风格要求（提示词 A）：写新内容前采用它，从源头少写 AI 味。" +
         "可注入 system prompt 或作为写作规范。Returns the generation-side style rules to apply BEFORE writing.",
@@ -302,7 +302,7 @@ function buildTools(config) {
   // ---------- 规则体检 ----------
   tools.push(
     defineTool({
-      name: "deai_rulecheck",
+      name: "optimize_reply_rulecheck",
       description:
         "跑内置回归语料（40 段真人 + 20 段 AI），输出每条规则的误报率、AI 检出率与维护建议。" +
         "规则改动后的回归工具；误报率 >5% 的规则不建议启用。Regression check over the built-in corpus.",
@@ -347,12 +347,12 @@ function buildTools(config) {
 module.exports = {
   buildTools: buildTools,
   TOOL_NAMES: [
-    "deai_scan",
-    "deai_rewrite_brief",
-    "deai_verify",
-    "deai_rescan",
-    "deai_check_rewrite",
-    "deai_style_prompt",
-    "deai_rulecheck"
+    "optimize_reply_scan",
+    "optimize_reply_brief",
+    "optimize_reply_verify",
+    "optimize_reply_rescan",
+    "optimize_reply_check",
+    "optimize_reply_style_prompt",
+    "optimize_reply_rulecheck"
   ]
 };
