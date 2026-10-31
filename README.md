@@ -97,18 +97,6 @@ optimize_reply_scan(text)                    → 有偏高/高项？
 
 开关改动即时生效，无需重启或重装：它写入当前 profile 的配置层，插件在运行中热更新总开关的取值。它就是上一节 `config.enabled` 的图形入口，两者等价。
 
-## 双端收录（dsh-market + GitHub）
-
-**给仓库打上 topic `dsh-plugin`（建议加 `dsh`、`deepseek-harness`）即完成大半**——社区市场每日自动扫描收录。完整三条路径（含给 `dshmarket` 精选列表的现成 PR 文件与 format 1 市场索引）见 **[market/README.md](market/README.md)**：
-
-| 路径 | 动作 | 现成材料 |
-|---|---|---|
-| GitHub topic 自动收录 | 打 topic `dsh-plugin` | — |
-| awesome-dsh-plugin（`dshmarket` 唯一数据源） | 提一个 YAML 的 PR | [market/awesome-dsh-plugin.yml](market/awesome-dsh-plugin.yml) |
-| 市场索引（format 1） | 托管 index.json 或提交第三方市场 | [market/index.json](market/index.json)（生成器 [scripts/build-market-index.mjs](scripts/build-market-index.mjs)） |
-
-打 tag 发布时 [Release 工作流](.github/workflows/release.yml) 自动上传 `dsh-plugin-optimize-ai-reply.tgz`（供 tarball 一键安装）、Chrome 扩展 zip，并在配置 `NPM_TOKEN` 后自动 `npm publish`。
-
 ## 上手示例
 
 在 DSH 会话里直接说：
