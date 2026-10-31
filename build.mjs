@@ -1,7 +1,7 @@
 /**
  * build.mjs —— 构建脚本：装配 dist/ 并打包 zip（零第三方依赖）
  * 用法：node build.mjs
- * 产物：deai-plugin/dist/（可直接「加载已解压的扩展程序」）与 deai-plugin-vX.Y.Z.zip（商店上传用）
+ * 产物：optimize-ai-reply/dist/（可直接「加载已解压的扩展程序」）与 optimize-ai-reply-vX.Y.Z.zip（商店上传用）
  */
 import { promises as fs } from "fs";
 import path from "path";
@@ -51,7 +51,7 @@ async function main() {
   }
 
   const pkg = JSON.parse(await fs.readFile(path.join(ROOT, "package.json"), "utf8"));
-  const zipName = `deai-plugin-v${pkg.version}.zip`;
+  const zipName = `optimize-ai-reply-v${pkg.version}.zip`;
   const zipPath = path.join(ROOT, zipName);
   await fs.rm(zipPath, { force: true });
 

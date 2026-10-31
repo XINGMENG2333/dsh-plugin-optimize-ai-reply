@@ -1,11 +1,11 @@
-# dsh-plugin-deai-tone · 去 AI 味
+# 优化 AI 回复 · Optimize AI Reply
 
-[![CI](https://github.com/your-github-id/dsh-plugin-deai-tone/actions/workflows/ci.yml/badge.svg)](https://github.com/your-github-id/dsh-plugin-deai-tone/actions/workflows/ci.yml)
+[![CI](https://github.com/your-github-id/dsh-plugin-optimize-ai-reply/actions/workflows/ci.yml/badge.svg)](https://github.com/your-github-id/dsh-plugin-optimize-ai-reply/actions/workflows/ci.yml)
 [![License: MIT](https://img.shields.io/badge/license-MIT-green.svg)](LICENSE)
 [![dsh-plugin](https://img.shields.io/badge/dsh-plugin-blue.svg)](https://github.com/topics/dsh-plugin)
 [![Node >=18](https://img.shields.io/badge/node-%3E%3D18-brightgreen.svg)](package.json)
 
-**DeepSeek Harness 插件**：把大模型输出改成读起来像人写的——本地密度扫描（人类基线）+ 五层校验改写 + 闭环复扫。**事实、论断强度、安全信息零损失**：宁可留一点 AI 味，也不能改数字、改强度、删掉安全提示。
+**DeepSeek Harness 插件**（包名 `dsh-plugin-optimize-ai-reply`）：把大模型输出改成读起来像人写的——本地密度扫描（人类基线）+ 五层校验改写 + 闭环复扫。**事实、论断强度、安全信息零损失**：宁可留一点 AI 味，也不能改数字、改强度、删掉安全提示。
 
 *A DeepSeek Harness plugin that strips AI-flavor from LLM text — local density scanning against human baselines, five-layer fact/strength/safety verification, and a closed-loop rescan. Facts, hedging strength, and safety notes are never lost.*
 
@@ -17,38 +17,38 @@
 
 ```bash
 # 从 npm（发布后）
-dsh plugin --profile demo add dsh-plugin-deai-tone
+dsh plugin --profile demo add dsh-plugin-optimize-ai-reply
 
 # 从 GitHub（无需 npm 发布）
-dsh plugin --profile demo add github:your-github-id/dsh-plugin-deai-tone
+dsh plugin --profile demo add github:your-github-id/dsh-plugin-optimize-ai-reply
 
-# 本地目录 / 预构建 tarball（Release 页可下载 dsh-plugin-deai-tone.tgz）
-dsh plugin --profile demo add ./deai-plugin
-dsh plugin --profile demo add ./dsh-plugin-deai-tone.tgz
+# 本地目录 / 预构建 tarball（Release 页可下载 dsh-plugin-optimize-ai-reply.tgz）
+dsh plugin --profile demo add ./optimize-ai-reply
+dsh plugin --profile demo add ./dsh-plugin-optimize-ai-reply.tgz
 ```
 
 或在 DSH 里打开 **Plugins → Discover**（需启用实验特性 *Custom plugin markets*），从市场索引一键安装（见 [market/README.md](market/README.md)）。
-安装后 `dsh --profile demo --dump-config` 应看到 `# == dsh-plugin-deai-tone` 层。
+安装后 `dsh --profile demo --dump-config` 应看到 `# == dsh-plugin-optimize-ai-reply` 层。
 
 ## 7 个工具 = L0–L6 流水线
 
 | 工具 | 层 | 作用 |
 |---|---|---|
-| `deai_scan` | **L2** | 本地扫描：每项特征的 命中数/密度/人类基线/AI 基线/倍率/判断（正常·观察项·偏高·高）。零网络、纯统计 |
-| `deai_rewrite_brief` | **L3** | 生成改写任务书：五条硬约束 + 本次命中清单 + 输出格式（提示词 B），**由你（模型）执行改写** |
-| `deai_verify` | **L4** | 五层校验：事实（数字/URL/代码/引文/专名）· 强度与主次 · 安全信息 · 结构，任一违规即 fail |
-| `deai_rescan` | **L5** | 闭环复扫：密度必须下降、不得引入新偏高项（「把破折号换成说白了」会被拦下） |
-| `deai_check_rewrite` | **L4+L5** | 一站式验收：返回 `accept` 或 `revert` 及原因（推荐改写后必调） |
-| `deai_style_prompt` | **L1** | 生成侧提示词 A：写新内容前采用，从源头少写 AI 味 |
-| `deai_rulecheck` | 维护 | 内置回归语料（40 真人 + 20 AI）逐规则误报率/检出率/建议 |
+| `optimize_reply_scan` | **L2** | 本地扫描：每项特征的 命中数/密度/人类基线/AI 基线/倍率/判断（正常·观察项·偏高·高）。零网络、纯统计 |
+| `optimize_reply_brief` | **L3** | 生成改写任务书：五条硬约束 + 本次命中清单 + 输出格式（提示词 B），**由你（模型）执行改写** |
+| `optimize_reply_verify` | **L4** | 五层校验：事实（数字/URL/代码/引文/专名）· 强度与主次 · 安全信息 · 结构，任一违规即 fail |
+| `optimize_reply_rescan` | **L5** | 闭环复扫：密度必须下降、不得引入新偏高项（「把破折号换成说白了」会被拦下） |
+| `optimize_reply_check` | **L4+L5** | 一站式验收：返回 `accept` 或 `revert` 及原因（推荐改写后必调） |
+| `optimize_reply_style_prompt` | **L1** | 生成侧提示词 A：写新内容前采用，从源头少写 AI 味 |
+| `optimize_reply_rulecheck` | 维护 | 内置回归语料（40 真人 + 20 AI）逐规则误报率/检出率/建议 |
 
 **标准工作流**（工具描述里已引导模型按此执行）：
 
 ```
-deai_scan(text)                    → 有偏高/高项？
+optimize_reply_scan(text)                    → 有偏高/高项？
   ├─ 无 → 保持原文，结束
-  └─ 有 → deai_rewrite_brief(text) → 模型按任务书改写
-           → deai_check_rewrite(before, after)
+  └─ 有 → optimize_reply_brief(text) → 模型按任务书改写
+           → optimize_reply_check(before, after)
                 ├─ accept → 输出终稿
                 └─ revert → 原样回退原文并说明原因（绝不交付更差文本）
 ```
@@ -60,8 +60,8 @@ deai_scan(text)                    → 有偏高/高项？
 在 profile 的 `cordis.patch.yml` 里按行 id 覆盖（无需改包）：
 
 ```yaml
-- id: deai-tone
-  name: dsh-plugin-deai-tone
+- id: optimize-ai-reply
+  name: dsh-plugin-optimize-ai-reply
   config:
     defaultRegister: qa          # qa|social|script|popular|formal|academic（文体分档）
     defaultModel: unknown        # gpt|claude|deepseek|gemini|kimi|qwen|doubao|…
@@ -82,13 +82,13 @@ deai_scan(text)                    → 有偏高/高项？
 | awesome-dsh-plugin（`dshmarket` 唯一数据源） | 提一个 YAML 的 PR | [market/awesome-dsh-plugin.yml](market/awesome-dsh-plugin.yml) |
 | 市场索引（format 1） | 托管 index.json 或提交第三方市场 | [market/index.json](market/index.json)（生成器 [scripts/build-market-index.mjs](scripts/build-market-index.mjs)） |
 
-打 tag 发布时 [Release 工作流](.github/workflows/release.yml) 自动上传 `dsh-plugin-deai-tone.tgz`（供 tarball 一键安装）、Chrome 扩展 zip，并在配置 `NPM_TOKEN` 后自动 `npm publish`。
+打 tag 发布时 [Release 工作流](.github/workflows/release.yml) 自动上传 `dsh-plugin-optimize-ai-reply.tgz`（供 tarball 一键安装）、Chrome 扩展 zip，并在配置 `NPM_TOKEN` 后自动 `npm publish`。
 
 ## 上手示例
 
 在 DSH 会话里直接说：
 
-> 用 deai_scan 看看这段回答有哪些 AI 味特征；有偏高项就按 deai_rewrite_brief 改写，然后用 deai_check_rewrite 验收。
+> 用 optimize_reply_scan 看看这段回答有哪些 AI 味特征；有偏高项就按 optimize_reply_brief 改写，然后用 optimize_reply_check 验收。
 
 模型会自动走完 扫描 → 改写 → 验收 →（不过则回退）的闭环。工具输出的判断只有四档：正常 / 观察项 / 偏高 / 高——不给「AI 味总分」（模型自评分不可靠）。
 
@@ -110,7 +110,7 @@ npm run test:dsh  # DSH 插件契约 20 项
 A 组中文 15 条 + 子规则 A3b、A 组英文 12 条（含 sloptells 实测子项）、B 组共识 16 条（命中+空泛双条件）、C 组禁止清单 10 条（不写检测器）。每条含证据等级、人类基线、AI 基线、倍率、适用文体/模型、as_of、保留边界、正例与 2 条反例。
 
 - **判定**：密度 ≥ AI 基线 → 高；≥ 人类基线 × 2（可调）→ 偏高；命中未达阈值 → 观察项。稀有特征 1 次即标记，段落类 ≥3 次。
-- **时效**：as_of 超 6 个月自动降级观察项；`deai_rulecheck` 输出逐规则误报率，>5% 不建议启用。
+- **时效**：as_of 超 6 个月自动降级观察项；`optimize_reply_rulecheck` 输出逐规则误报率，>5% 不建议启用。
 - **模型侧重**：Claude→空转引列表/顿号罗列；DeepSeek→破折号/长前置定语；GPT→翻案腔/rather than；Gemini→列表化/标题化。Kimi/Qwen/豆包/未知会注明「该模型无基线数据」。
 - 被实测推翻/撤销的条目（A8 概括词、EN12 破折号等）保留原值并降为观察项，依据见 [docs/source-notes.md](docs/source-notes.md)。
 

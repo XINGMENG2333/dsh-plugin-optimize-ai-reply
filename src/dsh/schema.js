@@ -109,7 +109,7 @@ function validateConfig(input) {
 var ConfigSchema = {
   "~standard": {
     version: 1,
-    vendor: "deai-tone",
+    vendor: "optimize-ai-reply",
     validate: function (value) {
       return validateConfig(value);
     }

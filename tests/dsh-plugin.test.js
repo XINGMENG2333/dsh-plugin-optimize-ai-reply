@@ -46,7 +46,7 @@ function assertEqual(actual, expected, msg) {
 var plugin = require(path.join(ROOT, "index.js"));
 
 test("入口：导出 name/inject/Config/apply/default", function () {
-  assertEqual(plugin.name, "deai-tone");
+  assertEqual(plugin.name, "optimize-ai-reply");
   assert(Array.isArray(plugin.inject) && plugin.inject.indexOf("tools") >= 0, "inject 应含 tools");
   assert(typeof plugin.apply === "function", "apply 应为函数");
   assert(plugin.Config && plugin.Config["~standard"], "Config 应实现 Standard Schema");
@@ -106,7 +106,7 @@ test("apply：注册 7 个工具且定义完整", function () {
   plugin.apply(ctx, plugin.Config["~standard"].validate(undefined).value);
   assertEqual(ctx.registered.length, 7, "应注册 7 个工具");
   var names = ctx.registered.map(function (t) { return t.name; });
-  ["deai_scan", "deai_rewrite_brief", "deai_verify", "deai_rescan", "deai_check_rewrite", "deai_style_prompt", "deai_rulecheck"].forEach(function (n) {
+  ["optimize_reply_scan", "optimize_reply_brief", "optimize_reply_verify", "optimize_reply_rescan", "optimize_reply_check", "optimize_reply_style_prompt", "optimize_reply_rulecheck"].forEach(function (n) {
     assert(names.indexOf(n) >= 0, "缺少工具 " + n);
   });
   ctx.registered.forEach(function (t) {
@@ -124,10 +124,10 @@ function toolByName(ctx, name) {
   return null;
 }
 
-test("deai_scan：返回密度报告且含基线字段", function () {
+test("optimize_reply_scan：返回密度报告且含基线字段", function () {
   var ctx = fakeCtx();
   plugin.apply(ctx, undefined);
-  return toolByName(ctx, "deai_scan")
+  return toolByName(ctx, "optimize_reply_scan")
     .execute({ text: "综上所述，这个方案是可行的。这不是效率问题，而是流程问题。" })
     .then(function (out) {
       var rep = JSON.parse(out);
@@ -140,10 +140,10 @@ test("deai_scan：返回密度报告且含基线字段", function () {
     });
 });
 
-test("deai_rewrite_brief：干净文本 → 无需改写；命中文本 → 含硬约束与工作流", function () {
+test("optimize_reply_brief：干净文本 → 无需改写；命中文本 → 含硬约束与工作流", function () {
   var ctx = fakeCtx();
   plugin.apply(ctx, undefined);
-  var brief = toolByName(ctx, "deai_rewrite_brief");
+  var brief = toolByName(ctx, "optimize_reply_brief");
   return brief
     .execute({ text: "先备份配置，再改端口。有问题看日志。" })
     .then(function (clean) {
@@ -152,30 +152,30 @@ test("deai_rewrite_brief：干净文本 → 无需改写；命中文本 → 含�
     })
     .then(function (dirty) {
       assert(dirty.indexOf("信息守恒") >= 0, "应含硬约束（信息守恒）");
-      assert(dirty.indexOf("deai_check_rewrite") >= 0, "应要求调用校验工具");
+      assert(dirty.indexOf("optimize_reply_check") >= 0, "应要求调用校验工具");
       assert(dirty.indexOf("回退") >= 0, "应回退规则");
     });
 });
 
-test("deai_verify / deai_rescan / deai_check_rewrite：好改写 accept、坏改写 revert", function () {
+test("optimize_reply_verify / optimize_reply_rescan / optimize_reply_check：好改写 accept、坏改写 revert", function () {
   var ctx = fakeCtx();
   plugin.apply(ctx, undefined);
   var before = "先看日志——一般能定位。再看配置——多半是端口。";
   var good = "先看日志，一般能定位。再看配置，多半是端口。";
   var bad = "先看日志，说白了一般能定位。再看配置，说白了多半是端口。";
-  return toolByName(ctx, "deai_check_rewrite")
+  return toolByName(ctx, "optimize_reply_check")
     .execute({ before: before, after: good })
     .then(function (okOut) {
       var okRes = JSON.parse(okOut);
       assertEqual(okRes.action, "accept", "好改写应 accept：" + JSON.stringify(okRes.reasons));
-      return toolByName(ctx, "deai_check_rewrite").execute({ before: before, after: bad });
+      return toolByName(ctx, "optimize_reply_check").execute({ before: before, after: bad });
     })
     .then(function (badOut) {
       var badRes = JSON.parse(badOut);
       assertEqual(badRes.action, "revert", "换味改写应 revert");
       assert(badRes.reasons.length > 0, "应给出原因");
       // 单独的 verify/rescan 也要工作
-      return toolByName(ctx, "deai_verify").execute({ before: "有效率 82%。", after: "有效率 85%。" });
+      return toolByName(ctx, "optimize_reply_verify").execute({ before: "有效率 82%。", after: "有效率 85%。" });
     })
     .then(function (vOut) {
       var v = JSON.parse(vOut);
@@ -184,19 +184,19 @@ test("deai_verify / deai_rescan / deai_check_rewrite：好改写 accept、坏改
     });
 });
 
-test("deai_style_prompt：返回提示词 A", function () {
+test("optimize_reply_style_prompt：返回提示词 A", function () {
   var ctx = fakeCtx();
   plugin.apply(ctx, undefined);
-  return toolByName(ctx, "deai_style_prompt").execute({ task: "写一份部署说明" }).then(function (out) {
+  return toolByName(ctx, "optimize_reply_style_prompt").execute({ task: "写一份部署说明" }).then(function (out) {
     assert(out.indexOf("你是正文写作助手") >= 0, "应为提示词 A");
     assert(out.indexOf("写一份部署说明") >= 0, "任务应附后");
   });
 });
 
-test("deai_rulecheck：跑内置语料给出误报率", function () {
+test("optimize_reply_rulecheck：跑内置语料给出误报率", function () {
   var ctx = fakeCtx();
   plugin.apply(ctx, undefined);
-  return toolByName(ctx, "deai_rulecheck").execute({}).then(function (out) {
+  return toolByName(ctx, "optimize_reply_rulecheck").execute({}).then(function (out) {
     var rep = JSON.parse(out);
     assert(rep.summary && rep.summary.humanDocs === 40, "应为 40 段真人语料");
     assert(rep.summary.docFpRate <= 0.05, "误报率应 ≤5%，实际 " + rep.summary.docFpRate);
@@ -207,7 +207,7 @@ test("配置生效：disabledRules 关闭规则后扫描不再产出", function 
   var ctx = fakeCtx();
   var cfg = plugin.Config["~standard"].validate({ disabledRules: ["A4"] }).value;
   plugin.apply(ctx, cfg);
-  return toolByName(ctx, "deai_scan")
+  return toolByName(ctx, "optimize_reply_scan")
     .execute({ text: "先看日志——定位。再看配置——看端口。" })
     .then(function (out) {
       var rep = JSON.parse(out);
@@ -225,14 +225,14 @@ test("bundle：package.json 声明 dsh.bundle / engines.dsh / files", function (
   assert(pkg.files.indexOf("index.js") >= 0 && pkg.files.indexOf("cordis.patch.yml") >= 0, "files 应含入口与 patch");
   assert(pkg.files.indexOf("src/core/") >= 0 && pkg.files.indexOf("src/dsh/") >= 0, "files 应含核心与工具层");
   assert(pkg.keywords.indexOf("dsh-plugin") >= 0, "keywords 应含 dsh-plugin（GitHub/市场自动收录依赖）");
-  assertEqual(pkg.name, "dsh-plugin-deai-tone");
+  assertEqual(pkg.name, "dsh-plugin-optimize-ai-reply");
 });
 
 test("bundle：cordis.patch.yml 引用包名且结构正确", function () {
   var yml = fs.readFileSync(path.join(ROOT, "cordis.patch.yml"), "utf8");
   assert(yml.indexOf("- insert:") >= 0, "应为 insert 层");
-  assert(yml.indexOf("name: dsh-plugin-deai-tone") >= 0, "应引用包名（Node 解析）");
-  assert(yml.indexOf("id: deai-tone") >= 0, "应有行 id");
+  assert(yml.indexOf("name: dsh-plugin-optimize-ai-reply") >= 0, "应引用包名（Node 解析）");
+  assert(yml.indexOf("id: optimize-ai-reply") >= 0, "应有行 id");
 });
 
 test("bundle：dsh.bundle.patch 文件真实存在", function () {
@@ -248,7 +248,7 @@ test("market/index.json：format 1 必填字段齐全", function () {
   assert(idx.title && idx.title.en, "市场 title 需含 en");
   assert(Array.isArray(idx.plugins) && idx.plugins.length >= 1, "plugins 非空");
   var p = idx.plugins[0];
-  assertEqual(p.name, "dsh-plugin-deai-tone");
+  assertEqual(p.name, "dsh-plugin-optimize-ai-reply");
   assert(p.title && p.title.en && p.title.zh, "插件 title 双语");
   assert(p.description && p.description.en, "插件 description 需含 en");
   assert(p.repository && /^https:\/\//.test(p.repository.url), "repository.url 需 https");
@@ -271,7 +271,7 @@ test("market/index.json：format 1 必填字段齐全", function () {
 test("market/index.json 与生成器输出一致（防漂移）", function () {
   // 生成器的时间戳/图标是确定性的：重跑应产生相同文件
   var current = fs.readFileSync(path.join(ROOT, "market", "index.json"), "utf8");
-  assert(current.indexOf("dsh-plugin-deai-tone") >= 0, "索引应含包名");
+  assert(current.indexOf("dsh-plugin-optimize-ai-reply") >= 0, "索引应含包名");
   assert(current.indexOf("data:image/png;base64,") >= 0, "图标应内联");
 });
 
@@ -279,8 +279,8 @@ test("market/index.json 与生成器输出一致（防漂移）", function () {
 
 test("market/awesome-dsh-plugin.yml：字段与单行约束", function () {
   var yml = fs.readFileSync(path.join(ROOT, "market", "awesome-dsh-plugin.yml"), "utf8");
-  assert(/^url: https:\/\/github\.com\/[\w.-]+\/dsh-plugin-deai-tone$/m.test(yml), "url 需为仓库 HTTPS 地址");
-  assert(/^name: [\w.-]+\/dsh-plugin-deai-tone$/m.test(yml), "name 需 owner/repo");
+  assert(/^url: https:\/\/github\.com\/[\w.-]+\/dsh-plugin-optimize-ai-reply$/m.test(yml), "url 需为仓库 HTTPS 地址");
+  assert(/^name: [\w.-]+\/dsh-plugin-optimize-ai-reply$/m.test(yml), "name 需 owner/repo");
   assert(/^category: \w+$/m.test(yml), "category 需为单个类目 id");
   assert(/^  en: .+\.$/m.test(yml), "description.en 需单行且以句号结尾");
   assert(/^  zh: .+$/m.test(yml), "description.zh 需单行");
@@ -291,7 +291,7 @@ test("market/awesome-dsh-plugin.yml：字段与单行约束", function () {
 
 test("market/awesome-dsh-plugin.yml：tarball 指向 GitHub Release", function () {
   var yml = fs.readFileSync(path.join(ROOT, "market", "awesome-dsh-plugin.yml"), "utf8");
-  assert(/tarball: https:\/\/github\.com\/.+\/releases\/latest\/download\/dsh-plugin-deai-tone\.tgz/.test(yml), "tarball 需指向 Release 资产");
+  assert(/tarball: https:\/\/github\.com\/.+\/releases\/latest\/download\/dsh-plugin-optimize-ai-reply\.tgz/.test(yml), "tarball 需指向 Release 资产");
 });
 
 // ---------- 七、README 收录指引存在 ----------

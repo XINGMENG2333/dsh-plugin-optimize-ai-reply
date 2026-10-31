@@ -1,6 +1,6 @@
-# cordis.patch.yml —— dsh-plugin-deai-tone 的 bundle 配置层
+# cordis.patch.yml —— dsh-plugin-optimize-ai-reply 的 bundle 配置层
 # 语法与 `dsh --patch` 覆盖层一致：YAML 数组，按行 id 插入插件。
 # 用户可在自己 profile 的 cordis.patch.yml 里按 id 覆盖本行 config，无需改动本包。
 - insert:
-    - id: deai-tone
-      name: dsh-plugin-deai-tone
+    - id: optimize-ai-reply
+      name: dsh-plugin-optimize-ai-reply

@@ -1,14 +1,14 @@
 /**
- * index.js —— dsh-plugin-deai-tone 插件入口（CommonJS，兼容 require 与 import）
+ * index.js —— dsh-plugin-optimize-ai-reply 插件入口（CommonJS，兼容 require 与 import）
  * DeepSeek Harness 插件：Cordis 模块，导出 name / inject / Config / apply。
- * apply 里把「去 AI 味」L0–L6 流水线注册为 7 个 harness 工具（见 src/dsh/tools.js）。
+ * apply 里把「优化 AI 回复」L0–L6 流水线注册为 7 个 harness 工具（见 src/dsh/tools.js）。
  */
 "use strict";
 
 var schema = require("./src/dsh/schema.js");
 var tools = require("./src/dsh/tools.js");
 
-var name = "deai-tone";
+var name = "optimize-ai-reply";
 var inject = ["tools"];
 var Config = schema.ConfigSchema;
 
@@ -23,7 +23,7 @@ function apply(ctx, config) {
     ctx.tools.register(defs[i]);
   }
   if (ctx.logger && typeof ctx.logger.info === "function") {
-    ctx.logger.info("[deai-tone] registered tools: " + tools.TOOL_NAMES.join(", "));
+    ctx.logger.info("[optimize-ai-reply] registered tools: " + tools.TOOL_NAMES.join(", "));
   }
 }
 
