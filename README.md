@@ -1,6 +1,6 @@
 # 优化 AI 回复 · Optimize AI Reply
 
-[![CI](https://github.com/your-github-id/dsh-plugin-optimize-ai-reply/actions/workflows/ci.yml/badge.svg)](https://github.com/your-github-id/dsh-plugin-optimize-ai-reply/actions/workflows/ci.yml)
+[![CI](https://github.com/XINGMENG2333/dsh-plugin-optimize-ai-reply/actions/workflows/ci.yml/badge.svg)](https://github.com/XINGMENG2333/dsh-plugin-optimize-ai-reply/actions/workflows/ci.yml)
 [![License: MIT](https://img.shields.io/badge/license-MIT-green.svg)](LICENSE)
 [![dsh-plugin](https://img.shields.io/badge/dsh-plugin-blue.svg)](https://github.com/topics/dsh-plugin)
 [![Node >=18](https://img.shields.io/badge/node-%3E%3D18-brightgreen.svg)](package.json)
@@ -23,7 +23,7 @@
 dsh plugin --profile demo add dsh-plugin-optimize-ai-reply
 
 # 从 GitHub（无需 npm 发布）
-dsh plugin --profile demo add github:your-github-id/dsh-plugin-optimize-ai-reply
+dsh plugin --profile demo add github:XINGMENG2333/dsh-plugin-optimize-ai-reply
 
 # 本地目录 / 预构建 tarball（Release 页可下载 dsh-plugin-optimize-ai-reply.tgz）
 dsh plugin --profile demo add ./optimize-ai-reply

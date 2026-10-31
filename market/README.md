@@ -15,8 +15,8 @@
 `dshmarket`（官方市场插件）只允许安装精选列表内的来源，收录方法是向
 [awesome-dsh-plugin/awesome-dsh-plugin](https://github.com/awesome-dsh-plugin/awesome-dsh-plugin) 提一个 PR：
 
-1. 复制本目录的 [awesome-dsh-plugin.yml](awesome-dsh-plugin.yml) 为 `data/plugins/<你的GitHub账号>__dsh-plugin-optimize-ai-reply.yml`
-   （文件名规则：`owner__repo.yml`，必须与 `url` 字段一致；先替换 yml 里的 `your-github-id`）。
+1. 复制本目录的 [awesome-dsh-plugin.yml](awesome-dsh-plugin.yml) 为 `data/plugins/<XINGMENG2333>__dsh-plugin-optimize-ai-reply.yml`
+   （文件名规则：`owner__repo.yml`，必须与 `url` 字段一致；先替换 yml 里的 `XINGMENG2333`）。
 2. 在对方仓库执行 `node scripts/generate-readme.mjs`，把重新生成的 README 一并提交。
 3. 一个 PR 只加这一个文件。描述必须单行；含 `: ` 的行要加引号；`description.en` 必须以句号结尾。
 
@@ -39,7 +39,7 @@
 dsh plugin --profile demo add dsh-plugin-optimize-ai-reply
 
 # 从 GitHub（无需 npm 发布；首次需放行 prepare 构建）
-dsh plugin --profile demo add github:your-github-id/dsh-plugin-optimize-ai-reply
+dsh plugin --profile demo add github:XINGMENG2333/dsh-plugin-optimize-ai-reply
 
 # 本地目录 / 预构建 tarball
 dsh plugin --profile demo add ./optimize-ai-reply
@@ -48,8 +48,8 @@ dsh plugin --profile demo add ./dsh-plugin-optimize-ai-reply-2.1.0.tgz
 
 ## 发布清单（打 tag 前把占位符换掉）
 
-- [ ] `package.json` 的 `repository` / `homepage` 中 `your-github-id` → 真实账号
+- [ ] `package.json` 的 `repository` / `homepage` 中 `XINGMENG2333` → 真实账号
 - [ ] `scripts/build-market-index.mjs` 的 `OWNER_PLACEHOLDER` → 真实账号，重跑生成 `market/index.json`
-- [ ] `market/awesome-dsh-plugin.yml` 的 `url` / `name` / `tarball` 中 `your-github-id` → 真实账号
+- [ ] `market/awesome-dsh-plugin.yml` 的 `url` / `name` / `tarball` 中 `XINGMENG2333` → 真实账号
 - [ ] `npm publish`（或走 Release 工作流的自动发布）
 - [ ] 打 GitHub topic：`dsh-plugin` `dsh` `deepseek-harness`

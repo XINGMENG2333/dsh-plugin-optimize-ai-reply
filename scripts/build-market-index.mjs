@@ -9,7 +9,7 @@ import path from "path";
 import { fileURLToPath } from "url";
 
 const ROOT = path.resolve(path.dirname(fileURLToPath(import.meta.url)), "..");
-const OWNER_PLACEHOLDER = "your-github-id"; // 发布前替换为真实 GitHub 账号/组织
+const OWNER_PLACEHOLDER = "XINGMENG2333"; // 发布前替换为真实 GitHub 账号/组织
 
 async function main() {
   const pkg = JSON.parse(await fs.readFile(path.join(ROOT, "package.json"), "utf8"));
