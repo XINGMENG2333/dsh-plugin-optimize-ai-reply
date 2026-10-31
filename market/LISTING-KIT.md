@@ -1,22 +1,22 @@
 # 上架执行包 · dsh-market + GitHub
 
 > 状态：**本地安装验证已通过**（见文末记录）；公开上架只差你的 GitHub 账号——三步执行，所有粘贴文本都已备好。
-> 一键准备：`node scripts/prepare-listing.mjs --owner 你的GitHub账号`
+> 一键准备：`node scripts/prepare-listing.mjs --owner XINGMENG2333`
 
 ---
 
 ## 第 0 步：一键替换占位符（1 条命令）
 
 ```bash
-node scripts/prepare-listing.mjs --owner 你的GitHub账号
+node scripts/prepare-listing.mjs --owner XINGMENG2333
 ```
 
-自动完成：9 个文件里的 `your-github-id` / `your-org` → 你的账号、重生成 `market/index.json`、跑一遍契约测试兜底。
+自动完成：9 个文件里的 `XINGMENG2333` / `XINGMENG2333` → 你的账号、重生成 `market/index.json`、跑一遍契约测试兜底。
 
 ## 第 1 步：创建 GitHub 仓库并推送（复制即用）
 
 ```bash
-git remote add origin https://github.com/你的GitHub账号/dsh-plugin-optimize-ai-reply.git
+git remote add origin https://github.com/XINGMENG2333/dsh-plugin-optimize-ai-reply.git
 git branch -M main
 git push -u origin main
 ```
@@ -26,27 +26,27 @@ git push -u origin main
 | 方式 | 操作 |
 |---|---|
 | 网页 | 仓库页 → 右侧 gear（About → Topics）→ 添加：`dsh-plugin` `dsh` `deepseek-harness` `optimize-ai-reply` `writing` |
-| 命令 | `gh repo edit 你的GitHub账号/dsh-plugin-optimize-ai-reply --add-topic dsh-plugin --add-topic dsh --add-topic deepseek-harness --add-topic optimize-ai-reply --add-topic writing` |
+| 命令 | `gh repo edit XINGMENG2333/dsh-plugin-optimize-ai-reply --add-topic dsh-plugin --add-topic dsh --add-topic deepseek-harness --add-topic optimize-ai-reply --add-topic writing` |
 
 打完 `dsh-plugin` topic 后，社区市场（[2BingLing/dsh-market](https://github.com/2BingLing/dsh-market) 等）每日 06:00 自动扫描收录，**无需任何表单**。
 
 ## 第 2 步：awesome-dsh-plugin 精选列表 PR（`dshmarket` 唯一数据源）
 
 1. 把 [awesome-dsh-plugin.yml](awesome-dsh-plugin.yml) 的内容原样放入对方仓库的
-   `data/plugins/你的GitHub账号__dsh-plugin-optimize-ai-reply.yml`（文件名必须是 `owner__repo.yml`）。
+   `data/plugins/XINGMENG2333__dsh-plugin-optimize-ai-reply.yml`（文件名必须是 `owner__repo.yml`）。
 2. 在对方仓库执行 `node scripts/generate-readme.mjs`，把重新生成的两个 README 一并提交。
 3. 一个 PR 只加这一个文件。
 
 **PR 标题（粘贴）**：
 
 ```
-Add 你的GitHub账号/dsh-plugin-optimize-ai-reply to the list
+Add XINGMENG2333/dsh-plugin-optimize-ai-reply to the list
 ```
 
 **PR 正文（粘贴）**：
 
 ```markdown
-- [x] I added **one file** at `data/plugins/你的GitHub账号__dsh-plugin-optimize-ai-reply.yml` — the READMEs are generated, don't edit them by hand
+- [x] I added **one file** at `data/plugins/XINGMENG2333__dsh-plugin-optimize-ai-reply.yml` — the READMEs are generated, don't edit them by hand
 - [x] I ran `node scripts/generate-readme.mjs` and committed the regenerated READMEs
 
 <!--
@@ -72,7 +72,7 @@ Add 你的GitHub账号/dsh-plugin-optimize-ai-reply to the list
 |---|---|
 | Plugin name | 优化 AI 回复 (Optimize AI Reply) |
 | Package name | `dsh-plugin-optimize-ai-reply` |
-| Repository URL | `https://github.com/你的GitHub账号/dsh-plugin-optimize-ai-reply` |
+| Repository URL | `https://github.com/XINGMENG2333/dsh-plugin-optimize-ai-reply` |
 | Category | writing（或 tools） |
 | Description (en) | Optimizes AI replies: local density scanner with human baselines, five-layer fact/strength/safety verification, closed-loop rescan. |
 | Description (zh) | 优化 AI 回复：本地密度扫描 + 五层校验改写 + 闭环复扫，事实/强度/安全零损失。 |
@@ -107,7 +107,7 @@ npm login && npm publish --access public
 
 ```bash
 dsh plugin --profile demo add dsh-plugin-optimize-ai-reply            # npm（发布后）
-dsh plugin --profile demo add github:你的GitHub账号/dsh-plugin-optimize-ai-reply   # GitHub
+dsh plugin --profile demo add github:XINGMENG2333/dsh-plugin-optimize-ai-reply   # GitHub
 dsh plugin --profile demo add ./dsh-plugin-optimize-ai-reply.tgz      # 预构建 tarball
 ```
 
