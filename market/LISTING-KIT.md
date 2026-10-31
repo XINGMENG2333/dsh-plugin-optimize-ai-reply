@@ -57,7 +57,6 @@ Add XINGMENG2333/dsh-plugin-optimize-ai-reply to the list
 - **本地密度扫描**：54 条规则（A 组实测基线 / B 组共识 / C 组禁止清单），密度对照人类基线判「正常·观察项·偏高·高」，零网络
 - **五层校验 + 闭环复扫**：事实（数字/URL/代码/引文/专名）· 强度与主次 · 安全信息 · 结构；校验不过自动回退原文，绝不交付更差文本
 - **7 个工具**覆盖 L0–L6：optimize_reply_scan / brief / verify / rescan / check / style_prompt / rulecheck
-- **实测**：40 段真人语料误报 0%、20 段 AI 检出 100%；156 项测试全绿
 - package.json 含 `dsh.bundle`，`dsh plugin add` 可直接安装；MIT
 -->
 ```
@@ -107,15 +106,7 @@ npm login && npm publish --access public
 
 ---
 
-## 本地安装验证记录（已完成，2026-10-31）
-
-| 步骤 | 结果 |
-|---|---|
-| `dsh plugin --profile listing-check add <本仓库>` | ✅ profile 初始化 + `dsh-plugin-optimize-ai-reply link:…` 安装成功（link 模式，零构建、无需 allowBuilds） |
-| `dsh --profile listing-check --dump-config` | ✅ 出现 `# == dsh-plugin-optimize-ai-reply` 配置层，行 `id: optimize-ai-reply / name: dsh-plugin-optimize-ai-reply` 正确插入 |
-| 工具注册（7 个） | ✅ 契约测试 20/20 + ESM 加载冒烟（optimize_reply_scan…rulecheck 全部注册，坏改写正确 revert） |
-
-用户侧安装命令（三条渠道任选）：
+## 安装命令（三条渠道任选）：
 
 ```bash
 dsh plugin --profile demo add dsh-plugin-optimize-ai-reply            # npm（发布后）

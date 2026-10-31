@@ -16,7 +16,7 @@
 ## 安装（DeepSeek Harness）
 
 **使用提示词（粘贴即用）**：[PROMPT.md](PROMPT.md) —— 一段主提示词驱动「扫描 → 改写 → 验收 → 自动回退」闭环，另附一句话版 / 写作前置版 / 英文版。
-**上架市场**：[market/LISTING-KIT.md](market/LISTING-KIT.md) —— dsh-market + GitHub 三步执行包（含现成 PR 文案与安装验证记录）。
+**上架市场**：[market/LISTING-KIT.md](market/LISTING-KIT.md) —— dsh-market + GitHub 三步执行包（含现成 PR 文案）。
 
 ```bash
 # 从 npm（发布后）
@@ -95,19 +95,6 @@ optimize_reply_scan(text)                    → 有偏高/高项？
 
 模型会自动走完 扫描 → 改写 → 验收 →（不过则回退）的闭环。工具输出的判断只有四档：正常 / 观察项 / 偏高 / 高——不给「AI 味总分」（模型自评分不可靠）。
 
-## 验证（本仓库实测）
-
-```bash
-npm test          # 三套全跑
-npm run test:dsh  # DSH 插件契约 20 项
-```
-
-| 测试 | 结果 |
-|---|---|
-| 单元测试（每条规则 1 正例 + 2 反例 + 引擎/五层校验/闭环/降级） | **125/125 通过** |
-| 验收测试（规格 8 条：误报/检出/事实/强度/安全/闭环/时效/降级） | **11/11 通过**（真人误报 0/40 = 0%，AI 检出 20/20 = 100%） |
-| DSH 插件契约（入口/Schema/7 工具/bundle/市场索引/提交文件） | **20/20 通过** |
-
 ## 规则库（54 条，数字全部有出处）
 
 A 组中文 15 条 + 子规则 A3b、A 组英文 12 条（含 sloptells 实测子项）、B 组共识 16 条（命中+空泛双条件）、C 组禁止清单 10 条（不写检测器）。每条含证据等级、人类基线、AI 基线、倍率、适用文体/模型、as_of、保留边界、正例与 2 条反例。
@@ -140,7 +127,7 @@ A 组中文 15 条 + 子规则 A3b、A 组英文 12 条（含 sloptells 实测�
 ├── src/core/                 纯函数引擎：scan / verify / rewrite / rescan / rulecheck / prompts / rules.json
 ├── src/corpus/               回归语料：40 真人 + 20 AI
 ├── market/                   收录材料：市场索引/生成器/awesome 提交文件/指南
-├── tests/                    125 单测 + 11 验收 + 20 DSH 契约
+├── tests/                    测试套件
 ├── .github/workflows/        CI + Release（npm/tarball/zip 自动发布）
 └── src/ui, manifest.json …   Chrome 扩展（副产品）
 ```
