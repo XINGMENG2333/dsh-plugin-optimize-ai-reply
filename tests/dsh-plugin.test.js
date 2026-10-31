@@ -1,7 +1,8 @@
 /**
  * dsh-plugin.test.js —— DeepSeek Harness 插件契约测试（零依赖）
  * 覆盖：入口导出、Standard Schema 配置、7 个工具注册与执行、
- *       bundle 契约（package.json dsh.bundle / cordis.patch.yml / engines.dsh）、
+ *       界面开关（volatile 配置 · schemastery 兼容信封 · 总开关门控 · 客户端开关页）、
+ *       bundle 契约（package.json dsh.bundle / dsh.client / cordis.patch.yml / engines.dsh）、
  *       市场索引 format 1 校验、awesome-dsh-plugin 提交文件校验。
  */
 "use strict";
@@ -123,6 +124,24 @@ function toolByName(ctx, name) {
   }
   return null;
 }
+
+test("工具参数 schema：编译为 object 根 JSON Schema（模型 API 契约）", function () {
+  var ctx = fakeCtx();
+  plugin.apply(ctx, undefined);
+  assertEqual(ctx.registered.length, 7);
+  ctx.registered.forEach(function (t) {
+    assertEqual(t.parameters.type, "object", t.name + " 参数应为 object 根");
+    assert(t.parameters.properties && typeof t.parameters.properties === "object", t.name + " 应有 properties");
+    Object.keys(t.parameters.properties).forEach(function (k) {
+      var p = t.parameters.properties[k];
+      assert(typeof p.type === "string", t.name + "." + k + " 应有编译后的 type");
+    });
+    (t.parameters.required || []).forEach(function (k) {
+      assert(t.parameters.properties[k], t.name + " required 项应存在：" + k);
+    });
+    assert(t.output && t.output.schema && t.output.schema.type === "string", t.name + " 输出 schema 应编译为 string");
+  });
+});
 
 test("optimize_reply_scan：返回密度报告且含基线字段", function () {
   var ctx = fakeCtx();
@@ -324,6 +343,380 @@ test("上架准备脚本存在且替换占位符", function () {
   var js = fs.readFileSync(path.join(ROOT, "scripts", "prepare-listing.mjs"), "utf8");
   assert(js.indexOf("your-github-id") >= 0 && js.indexOf("你的GitHub账号") >= 0, "应覆盖中英占位符");
   assert(js.indexOf("build-market-index.mjs") >= 0, "应重生成市场索引");
+});
+
+// ---------- 八、界面开关：volatile 配置（schemastery 兼容） ----------
+
+var schemaMod = require(path.join(ROOT, "src", "dsh", "schema.js"));
+var VOL_WRITE = Symbol.for("cosmokit.volatile.write");
+
+test("开关配置：enabled 默认为 true 且以稳定引用交付", function () {
+  var res = plugin.Config["~standard"].validate(undefined);
+  assert(res.value, "应通过校验");
+  assert(schemaMod.isVolatileRef(res.value.enabled), "enabled 应为 volatile 引用");
+  assertEqual(res.value.enabled.get(), true, "默认应开启");
+  assertEqual(schemaMod.unwrap(res.value.defaultRegister), "qa", "普通字段应为普通值");
+});
+
+test("开关配置：显式 enabled=false 解析为引用且读取为 false", function () {
+  var res = plugin.Config["~standard"].validate({ enabled: false });
+  assert(res.value, "应通过：" + JSON.stringify(res.issues));
+  assertEqual(res.value.enabled.get(), false);
+});
+
+test("开关配置：enabled 非法类型报 issues", function () {
+  var bad = plugin.Config["~standard"].validate({ enabled: "yes" });
+  assert(bad.issues && bad.issues.length > 0, "布尔字段应拒收字符串");
+});
+
+test("开关配置：宿主写回协议可热更新引用（界面开关即时生效的基础）", function () {
+  var res = plugin.Config["~standard"].validate({ enabled: true });
+  var ref = res.value.enabled;
+  ref[VOL_WRITE](false);
+  assertEqual(ref.get(), false, "共享写协议应更新引用");
+  assert(schemaMod.isVolatileRef(ref), "更新后仍是同一引用对象");
+});
+
+test("schema：schemastery 兼容信封 {uid, refs} 可被消费方重建", function () {
+  var envelope = plugin.Config.toJSON();
+  assert(typeof envelope.uid === "number", "信封应含 uid");
+  assert(envelope.refs && typeof envelope.refs === "object", "信封应含 refs 图");
+  // 消费方最小重建器（镜像真实 schemastery 的 new Schema({uid, refs}) 链接语义）
+  var map = {};
+  Object.keys(envelope.refs).forEach(function (uid) {
+    var src = envelope.refs[uid];
+    var node = { type: src.type, meta: JSON.parse(JSON.stringify(src.meta)) };
+    if (src.dict) node.dict = src.dict;
+    if (src.inner) node.inner = src.inner;
+    if (src.list) node.list = src.list;
+    map[uid] = node;
+  });
+  Object.keys(map).forEach(function (uid) {
+    var node = map[uid];
+    if (node.dict) {
+      var d = {};
+      Object.keys(node.dict).forEach(function (k) {
+        assert(typeof node.dict[k] === "number", "dict 嵌套引用应为 uid 数字");
+        d[k] = map[node.dict[k]];
+      });
+      node.dict = d;
+    }
+    if (node.inner) node.inner = map[node.inner];
+  });
+  var root = map[envelope.uid];
+  assertEqual(root.type, "object");
+  assert(root.dict.enabled.meta.volatile === true, "enabled 节点应带 volatile 标记");
+  assertEqual(root.dict.enabled.meta.default, true);
+  assertEqual(root.dict.enabled.type, "boolean");
+  assertEqual(root.dict.disabledRules.inner.type, "string", "数组字段应有元素类型");
+  // meta 深拷贝：消费方就地删除 volatile 标记不得污染原 schema
+  delete root.dict.enabled.meta.volatile;
+  assert(plugin.Config.dict.enabled.meta.volatile === true, "原 schema 的 volatile 标记应保留");
+});
+
+test("schema：vendor 标记为 schemastery（Loader/settings 识别即时字段的前提）", function () {
+  assertEqual(plugin.Config["~standard"].vendor, "schemastery");
+  assert(plugin.Config["~standard"].version === 1, "Standard Schema v1");
+  assertEqual(plugin.Config.type, "object");
+  assert(plugin.Config.dict && plugin.Config.dict.enabled, "结构面应暴露 dict");
+});
+
+// ---------- 九、总开关门控 ----------
+
+test("总开关关闭：7 个工具全部返回暂停通知，不执行流水线", function () {
+  var ctx = fakeCtx();
+  var cfg = plugin.Config["~standard"].validate({ enabled: false }).value;
+  plugin.apply(ctx, cfg);
+  var args = [
+    { text: "综上所述，这一突破标志着行业进入了新的高度。" },
+    { text: "综上所述，这一突破标志着行业进入了新的高度。" },
+    { before: "有效率 82%。", after: "有效率 85%。" },
+    { before: "先看日志。", after: "先看日志。" },
+    { before: "先看日志。", after: "先看日志。" },
+    { task: "写部署说明" },
+    {}
+  ];
+  var chain = Promise.resolve();
+  ctx.registered.forEach(function (t, i) {
+    chain = chain.then(function () {
+      return t.execute(args[i] || {}).then(function (out) {
+        if (t.name === "optimize_reply_style_prompt") {
+          assert(out.indexOf("已关闭") >= 0, t.name + " 应提示开关已关闭");
+        } else {
+          var rep = JSON.parse(out);
+          assertEqual(rep.status, "disabled", t.name + " 应返回 disabled");
+          assert(rep.message.indexOf("启用优化") >= 0 || rep.message.indexOf("插件") >= 0, t.name + " 应给出开启路径");
+        }
+      });
+    });
+  });
+  return chain;
+});
+
+test("总开关热更新：引用写回后工具立即恢复、再关闭立即暂停", function () {
+  var ctx = fakeCtx();
+  var cfg = plugin.Config["~standard"].validate({ enabled: false }).value;
+  plugin.apply(ctx, cfg);
+  var scan = toolByName(ctx, "optimize_reply_scan");
+  return scan
+    .execute({ text: "综上所述，这一突破标志着行业进入了新的高度。" })
+    .then(function (offOut) {
+      assertEqual(JSON.parse(offOut).status, "disabled", "关闭时应暂停");
+      cfg.enabled[VOL_WRITE](true); // 模拟 Loader 界面写回
+      return scan.execute({ text: "综上所述，这一突破标志着行业进入了新的高度。" });
+    })
+    .then(function (onOut) {
+      var rep = JSON.parse(onOut);
+      assert(rep.stats, "开启后应恢复扫描报告");
+      cfg.enabled[VOL_WRITE](false);
+      return scan.execute({ text: "综上所述，这一突破标志着行业进入了新的高度。" });
+    })
+    .then(function (againOut) {
+      assertEqual(JSON.parse(againOut).status, "disabled", "再次关闭应立即暂停");
+    });
+});
+
+test("总开关离线兼容：普通布尔值同样生效", function () {
+  var ctx = fakeCtx();
+  plugin.apply(ctx, { enabled: false });
+  return toolByName(ctx, "optimize_reply_scan")
+    .execute({ text: "综上所述，这一突破标志着行业进入了新的高度。" })
+    .then(function (out) {
+      assertEqual(JSON.parse(out).status, "disabled", "普通 false 也应暂停");
+    });
+});
+
+// ---------- 十、客户端半侧（DSH 界面开关页） ----------
+
+test("客户端产物：lib/client.js 存在且与源码一致", function () {
+  var built = fs.readFileSync(path.join(ROOT, "lib", "client.js"), "utf8");
+  var src = fs.readFileSync(path.join(ROOT, "src", "client", "index.js"), "utf8");
+  assertEqual(built, src, "lib/client.js 应为 src/client/index.js 原样拷贝");
+  assert(built.indexOf("window.__ModuleLoader__.load") >= 0, "应为懒加载 CJS 工厂格式");
+});
+
+function loadClientModule() {
+  var src = fs.readFileSync(path.join(ROOT, "lib", "client.js"), "utf8");
+  var captured = null;
+  var win = {
+    __ModuleLoader__: {
+      load: function (m) {
+        captured = m;
+      }
+    }
+  };
+  new Function("window", src)(win);
+  return captured;
+}
+
+function loadClientExports() {
+  var mod = loadClientModule();
+  var required = [];
+  var switchStub = function Switch() {};
+  var stubs = {
+    react: {
+      useState: function (init) {
+        return [typeof init === "function" ? init() : init, function () {}];
+      },
+      useEffect: function (fn) {
+        fn();
+      }
+    },
+    "react/jsx-runtime": {
+      jsx: function (type, props) {
+        return { jsxType: type, props: props };
+      },
+      jsxs: function (type, props) {
+        return { jsxType: type, props: props };
+      }
+    },
+    "@deepseek-ai/dsh-client-ui-primitives": { Switch: switchStub }
+  };
+  var req = function (name) {
+    required.push(name);
+    if (stubs[name]) return stubs[name];
+    throw new Error("客户端产物请求了基座之外的模块：" + name);
+  };
+  var exp = mod.factory(req);
+  return { mod: mod, exp: exp, required: required, switchStub: switchStub, stubs: stubs };
+}
+
+function fakeScope(snapshot) {
+  var calls = [];
+  var listeners = [];
+  var snap = snapshot;
+  return {
+    calls: calls,
+    setSnapshot: function (next) {
+      snap = next;
+      listeners.forEach(function (l) {
+        l();
+      });
+    },
+    getSnapshot: function () {
+      return snap;
+    },
+    subscribe: function (l) {
+      listeners.push(l);
+      return function () {};
+    },
+    set: function (field, value) {
+      calls.push([field, value]);
+      return Promise.resolve(true);
+    }
+  };
+}
+
+function fakeClientCtx(scope) {
+  var records = { locales: [], slots: [], entryId: null, effects: [] };
+  return {
+    records: records,
+    locale: {
+      bind: function () {
+        return function (k) {
+          return k;
+        };
+      },
+      register: function (ns, dicts) {
+        records.locales.push({ ns: ns, dicts: dicts });
+        return function () {};
+      }
+    },
+    configForms: {
+      get: function (id) {
+        records.entryId = id;
+        return scope;
+      }
+    },
+    slots: {
+      inject: function (name, factory) {
+        records.slots.push({ name: name, reg: factory() });
+        return function () {};
+      },
+      register: function (desc, comp) {
+        return { desc: desc, comp: comp };
+      }
+    },
+    effect: function (fn, label) {
+      records.effects.push(label);
+      fn();
+    },
+    logger: { info: function () {} }
+  };
+}
+
+test("客户端产物：模块形状（id / exports / 基座依赖白名单）", function () {
+  var got = loadClientExports();
+  assertEqual(got.mod.id, "dsh-plugin-optimize-ai-reply", "bundle id 应为包名");
+  assertEqual(got.exp.NS, "optimize-ai-reply.config");
+  assertEqual(JSON.stringify(got.exp.inject), JSON.stringify(["slots", "locale", "configForms"]));
+  assert(typeof got.exp.apply === "function", "应导出 apply");
+  var allowed = ["react", "react/jsx-runtime", "@deepseek-ai/dsh-client-ui-primitives"];
+  got.required.forEach(function (name) {
+    assert(allowed.indexOf(name) >= 0, "只允许请求基座模块：" + name);
+  });
+});
+
+test("客户端开关页：注册字典 + 两个 slot（组合包配置区与行配置区）", function () {
+  var got = loadClientExports();
+  var scope = fakeScope({ status: "ready", value: { enabled: true }, writable: true });
+  var ctx = fakeClientCtx(scope);
+  got.exp.apply(ctx);
+  assertEqual(ctx.records.entryId, "optimize-ai-reply", "settings 命名空间应为 Loader 条目 id");
+  assertEqual(ctx.records.locales.length, 1);
+  assertEqual(ctx.records.locales[0].ns, "optimize-ai-reply.config");
+  assertEqual(ctx.records.locales[0].dicts.zh.title, "优化 AI 回复");
+  assertEqual(ctx.records.locales[0].dicts.en.title, "Optimize AI Reply");
+  assertEqual(ctx.records.slots.length, 2, "应注册两个配置区");
+  var byName = {};
+  ctx.records.slots.forEach(function (s) {
+    byName[s.name] = s.reg;
+  });
+  assert(byName["plugins.bundle.config"], "应注册组合包配置区");
+  assertEqual(byName["plugins.bundle.config"].desc.key, "dsh-plugin-optimize-ai-reply");
+  assert(byName["plugins.row.config"], "应注册行配置区");
+  assertEqual(byName["plugins.row.config"].desc.key, "dsh-plugin-optimize-ai-reply#optimize-ai-reply");
+  assertEqual(byName["plugins.row.config"].desc.locale, "optimize-ai-reply.config");
+});
+
+test("客户端开关页：summary 视图一行文案，page 视图渲染开关", function () {
+  var got = loadClientExports();
+  var dicts = null;
+  var scope = fakeScope({ status: "ready", value: { enabled: true }, writable: true });
+  var ctx = fakeClientCtx(scope);
+  got.exp.apply(ctx);
+  dicts = ctx.records.locales[0].dicts;
+  var comp = ctx.records.slots[0].reg.comp;
+  var t = function (k) {
+    return dicts.zh[k] || k;
+  };
+  assertEqual(comp({ t: t, view: "summary" }), dicts.zh.summary, "summary 应为一行文案");
+  var tree = comp({ t: t, view: "page" });
+  var children = tree.props.children;
+  var sw = children[1];
+  assertEqual(sw.jsxType, got.switchStub, "应渲染共享 Switch 组件");
+  assertEqual(sw.props.checked, true, "开启时开关应为开");
+  assertEqual(sw.props.label, "启用优化");
+  assertEqual(children[0].props.children[2].props.children, dicts.zh.statusOn, "状态行应显示已启用");
+});
+
+test("客户端开关页：关闭状态呈现 + 开关写回 settings", function () {
+  var got = loadClientExports();
+  var scope = fakeScope({ status: "ready", value: { enabled: false }, writable: true });
+  var ctx = fakeClientCtx(scope);
+  got.exp.apply(ctx);
+  var dicts = ctx.records.locales[0].dicts;
+  var comp = ctx.records.slots[0].reg.comp;
+  var t = function (k) {
+    return dicts.zh[k] || k;
+  };
+  var tree = comp({ t: t, view: "page" });
+  var sw = tree.props.children[1];
+  assertEqual(sw.props.checked, false, "关闭时开关应为关");
+  assertEqual(tree.props.children[0].props.children[2].props.children, dicts.zh.statusOff);
+  sw.props.onChange(true);
+  // 写回走微任务链，让出一个宏任务后核对
+  return new Promise(function (resolve) {
+    setTimeout(resolve, 0);
+  }).then(function () {
+    assertEqual(scope.calls.length, 1, "应写回一次");
+    assertEqual(scope.calls[0][0], "enabled");
+    assertEqual(scope.calls[0][1], true, "应写回新值");
+  });
+});
+
+test("客户端开关页：未加载/只读时开关禁用", function () {
+  var got = loadClientExports();
+  var scope = fakeScope({ status: "unavailable", value: undefined, writable: false });
+  var ctx = fakeClientCtx(scope);
+  got.exp.apply(ctx);
+  var dicts = ctx.records.locales[0].dicts;
+  var comp = ctx.records.slots[0].reg.comp;
+  var t = function (k) {
+    return dicts.zh[k] || k;
+  };
+  var tree = comp({ t: t, view: "page" });
+  var sw = tree.props.children[1];
+  assertEqual(sw.props.disabled, true, "未加载或只读时应禁用");
+  assertEqual(tree.props.children[0].props.children[2].props.children, dicts.zh.unavailable);
+});
+
+test("bundle：dsh.client 契约（platform web + 服务注入 + ./client 导出）", function () {
+  var pkg = JSON.parse(fs.readFileSync(path.join(ROOT, "package.json"), "utf8"));
+  assert(pkg.dsh.client, "应声明 dsh.client");
+  assertEqual(pkg.dsh.client.platform, "web");
+  assertEqual(
+    JSON.stringify(pkg.dsh.client.inject),
+    JSON.stringify([
+      "@deepseek-ai/dsh-client-locale",
+      "@deepseek-ai/dsh-client-ui-settings",
+      "@deepseek-ai/dsh-client-ui-plugin-manager"
+    ])
+  );
+  assertEqual(pkg.exports["./client"].default, "./lib/client.js", "应导出 ./client");
+  assert(pkg.files.indexOf("lib/") >= 0, "files 应含 lib/");
+  assert(fs.existsSync(path.join(ROOT, "lib", "client.js")), "lib/client.js 应存在");
+  assert(pkg.files.indexOf("src/client/") >= 0, "files 应含客户端源码");
 });
 
 // ---------- 汇总 ----------

@@ -20,7 +20,9 @@ async function main() {
   }
 
   const repoUrl = `https://github.com/${OWNER_PLACEHOLDER}/dsh-plugin-optimize-ai-reply`;
-  const publishTimestamp = Math.floor(Date.parse("2026-10-31T12:45:00+08:00") / 1000);
+  const publishTimestamp = Math.floor(Date.parse("2026-10-31T20:30:00+08:00") / 1000);
+  // 发布提交（含本版本全部源码）；发版流程：提交代码 → 取 commit 哈希填这里 → 重新生成索引
+  const releaseCommit = "0000000000000000000000000000000000000000";
 
   const index = {
     format: 1,
@@ -48,7 +50,7 @@ async function main() {
         name: pkg.name,
         title: { en: "Optimize AI Reply", zh: "优化 AI 回复" },
         description: {
-          en: "Strips AI-flavor from LLM text: local density scanner with human baselines, five-layer fact/strength/safety verification, closed-loop rescan, and a54-rule regression corpus. Facts, hedging strength, and safety notes are never lost.",
+          en: "Strips AI-flavor from LLM text: local density scanner with human baselines, five-layer fact/strength/safety verification, closed-loop rescan, and a 54-rule regression corpus. Facts, hedging strength, and safety notes are never lost.",
           zh: "把大模型输出改成读起来像人写的：人类基线密度扫描、五层校验（事实/强度/安全/结构）、闭环复扫、54 条规则回归语料。事实、论断强度、安全信息零损失。"
         },
         icon: iconDataUrl,
@@ -63,7 +65,7 @@ async function main() {
           {
             version: pkg.version,
             publishTimestamp,
-            source: { type: "npm" },
+            source: { type: "git", url: repoUrl, commit: releaseCommit },
             engines: { dsh: pkg.engines.dsh }
           }
         ]

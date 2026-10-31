@@ -66,6 +66,7 @@ optimize_reply_scan(text)                    → 有偏高/高项？
 - id: optimize-ai-reply
   name: dsh-plugin-optimize-ai-reply
   config:
+    enabled: true                 # 总开关（一般在界面里切换，见下一节）
     defaultRegister: qa          # qa|social|script|popular|formal|academic（文体分档）
     defaultModel: unknown        # gpt|claude|deepseek|gemini|kimi|qwen|doubao|…
     thresholdMultiplier: 2       # 密度 ≥ 人类基线 × N 判「偏高」
@@ -74,6 +75,15 @@ optimize_reply_scan(text)                    → 有偏高/高项？
 ```
 
 配置实现 Standard Schema v1（[src/dsh/schema.js](src/dsh/schema.js)），非法值在插件装载期即报错。
+
+## 界面开关（DSH 内置）
+
+侧栏打开**插件** → 选择**优化 AI 回复**，配置区有一个**启用优化**总开关：
+
+- **开**（默认）：7 个工具正常工作，回复照常走扫描 → 改写 → 验收流水线；
+- **关**：全部工具立即暂停，只返回一条明确的暂停说明，回复不再经过流水线；随时可以再打开。
+
+开关改动即时生效，无需重启或重装：它写入当前 profile 的配置层，插件在运行中热更新总开关的取值。它就是上一节 `config.enabled` 的图形入口，两者等价。
 
 ## 双端收录（dsh-market + GitHub）
 

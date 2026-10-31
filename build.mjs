@@ -35,6 +35,10 @@ async function copyTree(from, to) {
 }
 
 async function main() {
+  // DSH 客户端半侧：懒加载 CJS 工厂格式产物（源码已是最终格式，原样拷贝）
+  await fs.mkdir(path.join(ROOT, "lib"), { recursive: true });
+  await fs.copyFile(path.join(ROOT, "src", "client", "index.js"), path.join(ROOT, "lib", "client.js"));
+
   await fs.rm(DIST, { recursive: true, force: true });
   await fs.mkdir(DIST, { recursive: true });
   for (const item of INCLUDE) {
@@ -68,6 +72,7 @@ async function main() {
 
   console.log("");
   console.log("构建完成：");
+  console.log("  DSH 客户端半侧：lib/client.js");
   console.log("  目录：" + DIST);
   console.log("  压缩包：" + zipPath);
   console.log("安装：Chrome → 扩展程序 → 开发者模式 → 加载已解压的扩展程序 → 选 dist/");

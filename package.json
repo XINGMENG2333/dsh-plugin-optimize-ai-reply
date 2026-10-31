@@ -1,6 +1,6 @@
 {
   "name": "dsh-plugin-optimize-ai-reply",
-  "version": "2.2.0",
+  "version": "2.3.0",
   "description": "DeepSeek Harness plugin that optimizes AI replies and strips AI-flavor from LLM text: local density scanner, five-layer fact/strength/safety verification, closed-loop rescan. 优化 AI 回复：本地密度扫描 + 五层校验改写 + 闭环复扫，事实/强度/安全零损失。",
   "keywords": [
     "dsh-plugin",
@@ -27,6 +27,9 @@
       "import": "./index.mjs",
       "require": "./index.js"
     },
+    "./client": {
+      "default": "./lib/client.js"
+    },
     "./package.json": "./package.json",
     "./rules.json": "./src/core/rules.json"
   },
@@ -36,7 +39,9 @@
     "cordis.patch.yml",
     "src/core/",
     "src/dsh/",
+    "src/client/",
     "src/corpus/",
+    "lib/",
     "assets/icons/",
     "market/",
     "README.md",
@@ -45,6 +50,14 @@
   "dsh": {
     "bundle": {
       "patch": "./cordis.patch.yml"
+    },
+    "client": {
+      "platform": "web",
+      "inject": [
+        "@deepseek-ai/dsh-client-locale",
+        "@deepseek-ai/dsh-client-ui-settings",
+        "@deepseek-ai/dsh-client-ui-plugin-manager"
+      ]
     }
   },
   "engines": {
@@ -70,6 +83,8 @@
     "test:dsh": "node tests/dsh-plugin.test.js",
     "rulecheck": "node src/core/rulecheck.js",
     "build": "node build.mjs",
+    "build:client": "node scripts/build-client.js",
+    "pretest": "node scripts/build-client.js",
     "prepack": "node tests/run-tests.js && node tests/dsh-plugin.test.js"
   }
 }

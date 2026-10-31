@@ -14,7 +14,45 @@ var Prompts = require("../core/prompts.js");
 var Rulecheck = require("../core/rulecheck.js");
 var rulesJson = require("../core/rules.json");
 
-// 宿主提供真 defineTool（@deepseek-ai/dsh-tools）；离线/单测退化为透传
+// 宿主提供真 defineTool（@deepseek-ai/dsh-tools）；离线/单测/软链接安装退化为透传。
+// 透传实现必须把作者侧参数 DSL 编译为 JSON Schema（与 defineTool 的编译结果同形）：
+// 注册表把 definition.parameters 直接作为函数 schema 交给模型 API，
+// 原样透传 DSL map 会被 API 以 'type: null' 拒绝。
+function fieldToJsonSchema(field) {
+  var node = { type: field.type };
+  if (field.description !== undefined) node.description = field.description;
+  if (field.title !== undefined) node.title = field.title;
+  if (field.default !== undefined) node.default = field.default;
+  if (field.examples !== undefined) node.examples = field.examples;
+  if (field.enum !== undefined) node.enum = field.enum.slice();
+  if (field.const !== undefined) node.const = field.const;
+  if (field.type === "array" && field.items) node.items = fieldToJsonSchema(field.items);
+  if (field.type === "object" && field.properties) {
+    var compiled = compilePropertyMap(field.properties);
+    node.properties = compiled.properties;
+    if (compiled.required) node.required = compiled.required;
+    if (field.additionalProperties !== undefined) node.additionalProperties = field.additionalProperties;
+  }
+  return node;
+}
+
+function compilePropertyMap(params) {
+  var properties = {};
+  var required = [];
+  for (var key in params) {
+    properties[key] = fieldToJsonSchema(params[key]);
+    if (params[key].required) required.push(key);
+  }
+  return { properties: properties, required: required.length ? required : undefined };
+}
+
+function compileParameters(params) {
+  var compiled = compilePropertyMap(params || {});
+  var schema = { type: "object", properties: compiled.properties };
+  if (compiled.required) schema.required = compiled.required;
+  return schema;
+}
+
 function resolveDefineTool() {
   try {
     var mod = require("@deepseek-ai/dsh-tools");
@@ -23,7 +61,17 @@ function resolveDefineTool() {
     // 离线环境：使用透传实现
   }
   return function defineToolShim(def) {
-    return def;
+    var out = {};
+    for (var k in def) out[k] = def[k];
+    out.parameters = compileParameters(def.parameters);
+    if (def.output && def.output.schema) {
+      out.output = {
+        schema: fieldToJsonSchema(def.output.schema),
+        render: def.output.render
+      };
+      if (def.output.presentationMeta) out.output.presentationMeta = def.output.presentationMeta;
+    }
+    return out;
   };
 }
 
@@ -37,6 +85,21 @@ var TEXT_OUTPUT = {
 function json(value) {
   return JSON.stringify(value, null, 2);
 }
+
+// ---------- 总开关（volatile 配置，DSH 界面「插件 → 优化 AI 回复 → 配置」） ----------
+
+// 配置值可能是稳定引用（宿主 Loader 热更新）或普通值（离线/单测），统一读取
+function readValue(v) {
+  return v && typeof v.get === "function" ? v.get() : v;
+}
+
+var DISABLED_NOTICE = {
+  status: "disabled",
+  message:
+    "「优化 AI 回复」总开关已关闭，本工具暂停工作。" +
+    "如需启用：DSH 侧栏「插件」→「优化 AI 回复」→ 配置 → 打开「启用优化」。" +
+    "请不要重复调用本插件工具，直接按常规完成任务。"
+};
 
 function pickRules(disabled) {
   if (!disabled || !disabled.length) return rulesJson;
@@ -93,17 +156,35 @@ function scanToReport(res) {
 function buildTools(config) {
   var defineTool = resolveDefineTool();
   var defaults = {
-    register: config.defaultRegister || "qa",
-    model: config.defaultModel || "unknown",
-    threshold: typeof config.thresholdMultiplier === "number" ? config.thresholdMultiplier : 2
+    register: readValue(config.defaultRegister) || "qa",
+    model: readValue(config.defaultModel) || "unknown",
+    threshold: typeof readValue(config.thresholdMultiplier) === "number" ? readValue(config.thresholdMultiplier) : 2
   };
-  var rules = pickRules(config.disabledRules);
+  var rules = pickRules(readValue(config.disabledRules));
+
+  // 总开关：每次调用实时读取（界面开/关即时生效，无需重载插件）
+  function isEnabled() {
+    return readValue(config.enabled) !== false;
+  }
+  function tool(def) {
+    var run = def.execute;
+    var name = def.name;
+    def.execute = async function (args) {
+      if (!isEnabled()) {
+        return name === "optimize_reply_style_prompt"
+          ? "「优化 AI 回复」已关闭：本次写作不做任何风格干预，请直接按常规方式完成写作。"
+          : json(DISABLED_NOTICE);
+      }
+      return run(args);
+    };
+    return defineTool(def);
+  }
 
   var tools = [];
 
   // ---------- L2 本地扫描 ----------
   tools.push(
-    defineTool({
+    tool({
       name: "optimize_reply_scan",
       description:
         "本地扫描文本的 AI 写作特征（密度对照人类基线，零网络、纯统计）。" +
@@ -139,7 +220,7 @@ function buildTools(config) {
 
   // ---------- L3 改写任务书 ----------
   tools.push(
-    defineTool({
+    tool({
       name: "optimize_reply_brief",
       description:
         "生成「优化 AI 回复」改写任务书：硬约束 + 本次命中的特征清单 + 输出格式（提示词 B）。" +
@@ -184,7 +265,7 @@ function buildTools(config) {
 
   // ---------- L4 三层校验 ----------
   tools.push(
-    defineTool({
+    tool({
       name: "optimize_reply_verify",
       description:
         "五层校验改写结果：事实（数字/URL/代码/引文/专名）、论断强度与主次、安全信息、结构。" +
@@ -203,7 +284,7 @@ function buildTools(config) {
 
   // ---------- L5 闭环复扫 ----------
   tools.push(
-    defineTool({
+    tool({
       name: "optimize_reply_rescan",
       description:
         "闭环复扫：改写结果重新扫描，要求被处理项密度下降且不引入新的「偏高/高」项（如把破折号换成「说白了」会被拦下）。" +
@@ -237,7 +318,7 @@ function buildTools(config) {
 
   // ---------- L4 + L5 合一（推荐工作流用） ----------
   tools.push(
-    defineTool({
+    tool({
       name: "optimize_reply_check",
       description:
         "一站式验收改写：内部执行 optimize_reply_verify + optimize_reply_rescan，返回 action=accept 或 revert 及原因。" +
@@ -284,7 +365,7 @@ function buildTools(config) {
 
   // ---------- L1 生成侧提示词 ----------
   tools.push(
-    defineTool({
+    tool({
       name: "optimize_reply_style_prompt",
       description:
         "返回「生成侧」写作风格要求（提示词 A）：写新内容前采用它，从源头少写 AI 味。" +
@@ -301,7 +382,7 @@ function buildTools(config) {
 
   // ---------- 规则体检 ----------
   tools.push(
-    defineTool({
+    tool({
       name: "optimize_reply_rulecheck",
       description:
         "跑内置回归语料（40 段真人 + 20 段 AI），输出每条规则的误报率、AI 检出率与维护建议。" +
@@ -346,6 +427,7 @@ function buildTools(config) {
 
 module.exports = {
   buildTools: buildTools,
+  DISABLED_NOTICE: DISABLED_NOTICE,
   TOOL_NAMES: [
     "optimize_reply_scan",
     "optimize_reply_brief",
