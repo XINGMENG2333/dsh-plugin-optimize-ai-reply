@@ -15,6 +15,9 @@
 
 ## 安装（DeepSeek Harness）
 
+**使用提示词（粘贴即用）**：[PROMPT.md](PROMPT.md) —— 一段主提示词驱动「扫描 → 改写 → 验收 → 自动回退」闭环，另附一句话版 / 写作前置版 / 英文版。
+**上架市场**：[market/LISTING-KIT.md](market/LISTING-KIT.md) —— dsh-market + GitHub 三步执行包（含现成 PR 文案与安装验证记录）。
+
 ```bash
 # 从 npm（发布后）
 dsh plugin --profile demo add dsh-plugin-optimize-ai-reply

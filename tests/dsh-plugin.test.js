@@ -304,6 +304,29 @@ test("market/README.md：三条收录路径齐全", function () {
   assert(md.indexOf("your-github-id") >= 0, "应含占位符替换提醒");
 });
 
+test("上架包：LISTING-KIT.md 三步 + PR 文案 + 验证记录", function () {
+  var md = fs.readFileSync(path.join(ROOT, "market", "LISTING-KIT.md"), "utf8");
+  assert(md.indexOf("第 1 步") >= 0 && md.indexOf("第 2 步") >= 0 && md.indexOf("第 3 步") >= 0, "应含三步");
+  assert(md.indexOf("Add ") >= 0 && md.indexOf("data/plugins/") >= 0, "应含 PR 标题与文件路径");
+  assert(md.indexOf("generate-readme.mjs") >= 0, "应含对方仓库生成命令");
+  assert(md.indexOf("本地安装验证记录") >= 0, "应含安装验证记录");
+  assert(md.indexOf("dsh plugin") >= 0, "应含用户安装命令");
+});
+
+test("提示词：PROMPT.md 主提示词覆盖工作流与硬约束", function () {
+  var md = fs.readFileSync(path.join(ROOT, "PROMPT.md"), "utf8");
+  assert(md.indexOf("optimize_reply_scan") >= 0 && md.indexOf("optimize_reply_brief") >= 0 && md.indexOf("optimize_reply_check") >= 0, "应含三步工具");
+  assert(md.indexOf("信息守恒") >= 0, "应含硬约束（信息守恒）");
+  assert(md.indexOf("回退") >= 0, "应含回退要求");
+  assert(md.indexOf("只要终稿") >= 0, "应含只要终稿分支");
+});
+
+test("上架准备脚本存在且替换占位符", function () {
+  var js = fs.readFileSync(path.join(ROOT, "scripts", "prepare-listing.mjs"), "utf8");
+  assert(js.indexOf("your-github-id") >= 0 && js.indexOf("你的GitHub账号") >= 0, "应覆盖中英占位符");
+  assert(js.indexOf("build-market-index.mjs") >= 0, "应重生成市场索引");
+});
+
 // ---------- 汇总 ----------
 
 (function runAsync() {

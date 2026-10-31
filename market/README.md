@@ -1,5 +1,8 @@
 # 市场与收录（market/）
 
+**要上架？直接看 [LISTING-KIT.md](LISTING-KIT.md)**——三步执行包，PR 标题/正文、表单字段、安装验证记录全部现成。
+插件使用提示词见 [../PROMPT.md](../PROMPT.md)。
+
 本目录是「优化 AI 回复」插件进入 **DSH 插件市场** 与 **GitHub 生态** 的收录材料。三条路径按省事程度排序：
 
 ## 路径一：GitHub topic 自动收录（最快，推荐先做）
