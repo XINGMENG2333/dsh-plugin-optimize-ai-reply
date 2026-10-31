@@ -40,8 +40,13 @@ function compilePropertyMap(params) {
   var properties = {};
   var required = [];
   for (var key in params) {
-    properties[key] = fieldToJsonSchema(params[key]);
-    if (params[key].required) required.push(key);
+    var field = params[key];
+    // 与 defineTool 的编译期规则一致：可选参数省略 required，写成 false 会被宿主拒绝
+    if (field.required !== undefined && field.required !== true) {
+      throw new Error("unsupported JSON schema: parameters." + key + ".required must be true when present");
+    }
+    properties[key] = fieldToJsonSchema(field);
+    if (field.required) required.push(key);
   }
   return { properties: properties, required: required.length ? required : undefined };
 }
@@ -194,15 +199,13 @@ function buildTools(config) {
         text: { type: "string", required: true, description: "要扫描的文本（中/英文）" },
         register: {
           type: "string",
-          required: false,
           description: "文体：qa|social|script|popular|formal|academic，默认取插件配置"
         },
         model: {
           type: "string",
-          required: false,
           description: "出稿模型 id：gpt|claude|deepseek|gemini|kimi|qwen|doubao|gpt-legacy|claude-early|unknown"
         },
-        threshold: { type: "number", required: false, description: "触发阈值（人类基线 × N），默认 2" }
+        threshold: { type: "number", description: "触发阈值（人类基线 × N），默认 2" }
       },
       output: TEXT_OUTPUT,
       async execute(args) {
@@ -228,9 +231,9 @@ function buildTools(config) {
         "不通过就回退原文。Produces the rewrite brief (hard constraints + targeted hits); you perform the rewrite, then verify.",
       parameters: {
         text: { type: "string", required: true, description: "原文" },
-        register: { type: "string", required: false, description: "文体，同 optimize_reply_scan" },
-        model: { type: "string", required: false, description: "出稿模型 id，同 optimize_reply_scan" },
-        threshold: { type: "number", required: false, description: "触发阈值，默认 2" }
+        register: { type: "string", description: "文体，同 optimize_reply_scan" },
+        model: { type: "string", description: "出稿模型 id，同 optimize_reply_scan" },
+        threshold: { type: "number", description: "触发阈值，默认 2" }
       },
       output: TEXT_OUTPUT,
       async execute(args) {
@@ -292,8 +295,8 @@ function buildTools(config) {
       parameters: {
         before: { type: "string", required: true, description: "原文" },
         after: { type: "string", required: true, description: "改写后文本" },
-        register: { type: "string", required: false, description: "文体，同 optimize_reply_scan" },
-        model: { type: "string", required: false, description: "出稿模型 id，同 optimize_reply_scan" }
+        register: { type: "string", description: "文体，同 optimize_reply_scan" },
+        model: { type: "string", description: "出稿模型 id，同 optimize_reply_scan" }
       },
       output: TEXT_OUTPUT,
       async execute(args) {
@@ -326,8 +329,8 @@ function buildTools(config) {
       parameters: {
         before: { type: "string", required: true, description: "原文" },
         after: { type: "string", required: true, description: "改写后文本" },
-        register: { type: "string", required: false, description: "文体，同 optimize_reply_scan" },
-        model: { type: "string", required: false, description: "出稿模型 id，同 optimize_reply_scan" }
+        register: { type: "string", description: "文体，同 optimize_reply_scan" },
+        model: { type: "string", description: "出稿模型 id，同 optimize_reply_scan" }
       },
       output: TEXT_OUTPUT,
       async execute(args) {
@@ -371,7 +374,7 @@ function buildTools(config) {
         "返回「生成侧」写作风格要求（提示词 A）：写新内容前采用它，从源头少写 AI 味。" +
         "可注入 system prompt 或作为写作规范。Returns the generation-side style rules to apply BEFORE writing.",
       parameters: {
-        task: { type: "string", required: false, description: "可选：写作任务描述，会附在提示词后" }
+        task: { type: "string", description: "可选：写作任务描述，会附在提示词后" }
       },
       output: TEXT_OUTPUT,
       async execute(args) {
@@ -390,7 +393,6 @@ function buildTools(config) {
       parameters: {
         includeCorpusStats: {
           type: "boolean",
-          required: false,
           description: "是否附带逐条完整统计（默认 false，只给命中规则）"
         }
       },
