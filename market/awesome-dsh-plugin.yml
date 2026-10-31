@@ -1,0 +1,7 @@
+url: https://github.com/your-github-id/dsh-plugin-deai-tone
+name: your-github-id/dsh-plugin-deai-tone
+category: tools
+description:
+  en: Strips AI-flavor from LLM text with a local density scanner and five-layer fact/strength/safety verification, closing the loop with a rescan.
+  zh: 去 AI 味：本地密度扫描 + 五层校验（事实/强度/安全/结构）+ 闭环复扫，事实与论断强度零损失。
+tarball: https://github.com/your-github-id/dsh-plugin-deai-tone/releases/latest/download/dsh-plugin-deai-tone.tgz

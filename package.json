@@ -1,0 +1,75 @@
+{
+  "name": "dsh-plugin-deai-tone",
+  "version": "2.1.0",
+  "description": "DeepSeek Harness plugin that strips AI-flavor from LLM text: local density scanner, five-layer fact/strength/safety verification, closed-loop rescan. 本地密度扫描 + 五层校验改写 + 闭环复扫，事实/强度/安全零损失。",
+  "keywords": [
+    "dsh-plugin",
+    "dsh",
+    "deepseek-harness",
+    "ai-writing",
+    "de-ai",
+    "writing",
+    "text-processing",
+    "chrome-extension"
+  ],
+  "license": "MIT",
+  "author": "DeAI Tone contributors",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/your-org/dsh-plugin-deai-tone.git"
+  },
+  "homepage": "https://github.com/your-org/dsh-plugin-deai-tone#readme",
+  "type": "commonjs",
+  "main": "index.js",
+  "exports": {
+    ".": {
+      "import": "./index.mjs",
+      "require": "./index.js"
+    },
+    "./package.json": "./package.json",
+    "./rules.json": "./src/core/rules.json"
+  },
+  "files": [
+    "index.js",
+    "index.mjs",
+    "cordis.patch.yml",
+    "src/core/",
+    "src/dsh/",
+    "src/corpus/",
+    "assets/icons/",
+    "market/",
+    "README.md",
+    "CHANGELOG.md",
+    "LICENSE"
+  ],
+  "dsh": {
+    "bundle": {
+      "patch": "./cordis.patch.yml"
+    }
+  },
+  "engines": {
+    "node": ">=18",
+    "dsh": ">=0.2.0"
+  },
+  "peerDependencies": {
+    "@deepseek-ai/cordis": "*",
+    "@deepseek-ai/dsh-tools": "*"
+  },
+  "peerDependenciesMeta": {
+    "@deepseek-ai/cordis": {
+      "optional": true
+    },
+    "@deepseek-ai/dsh-tools": {
+      "optional": true
+    }
+  },
+  "scripts": {
+    "test": "node tests/run-tests.js && node tests/acceptance.js && node tests/dsh-plugin.test.js",
+    "test:unit": "node tests/run-tests.js",
+    "test:acceptance": "node tests/acceptance.js",
+    "test:dsh": "node tests/dsh-plugin.test.js",
+    "rulecheck": "node src/core/rulecheck.js",
+    "build": "node build.mjs",
+    "prepack": "node tests/run-tests.js && node tests/dsh-plugin.test.js"
+  }
+}
