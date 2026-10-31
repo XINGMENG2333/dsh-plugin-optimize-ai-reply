@@ -99,7 +99,7 @@ npm login && npm publish --access public
 | 项 | 状态 |
 |---|---|
 | GitHub 仓库 | ✅ <https://github.com/XINGMENG2333/dsh-plugin-optimize-ai-reply>（代码已推送，topics：`dsh-plugin` `dsh` `deepseek-harness` `optimize-ai-reply` `ai-writing` `writing` `text-processing`） |
-| Release + tarball | ✅ [v2.2.0](https://github.com/XINGMENG2333/dsh-plugin-optimize-ai-reply/releases/tag/v2.2.0)，`dsh-plugin-optimize-ai-reply.tgz` 已上传（`/releases/latest/download/` 链接可用） |
+| Release + tarball | ✅ [v2.4.1](https://github.com/XINGMENG2333/dsh-plugin-optimize-ai-reply/releases/tag/v2.4.1)，`dsh-plugin-optimize-ai-reply.tgz` 已上传（`/releases/latest/download/` 链接可用） |
 | awesome-dsh-plugin 收录 PR（dshmarket 唯一数据源） | ✅ [PR #10858](https://github.com/awesome-dsh-plugin/awesome-dsh-plugin/pull/10858)（含 generate-readme.mjs 重新生成的双语 README） |
 | 社区市场自动收录 | ⏳ topic `dsh-plugin` 已打，2BingLing/dsh-market 等每日 06:00 自动扫描 |
 | npm publish | ⬜ 可选（`npm login && npm publish --access public`） |
