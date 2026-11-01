@@ -1,0 +1,42 @@
+name: CI
+
+on:
+  push:
+    branches: [main, master]
+  pull_request:
+
+jobs:
+  test:
+    runs-on: ubuntu-latest
+    strategy:
+      matrix:
+        node-version: [20, 24]
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: ${{ matrix.node-version }}
+      # 零依赖工程：不需要 npm install，直接跑三套测试
+      - name: Unit tests (125+, every rule 1 positive + 2 negatives)
+        run: node tests/run-tests.js
+      - name: Acceptance tests (8 spec criteria)
+        run: node tests/acceptance.js
+      - name: DSH plugin contract tests
+        run: node tests/dsh-plugin.test.js
+      - name: Pack dry-run (npm files whitelist sanity)
+        run: npm pack --dry-run
+
+  market-index:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 24
+      - name: Regenerate market index and fail on drift
+        run: |
+          node scripts/build-market-index.mjs
+          git diff --exit-code market/index.json || {
+            echo "::error::market/index.json 与生成器不一致，请运行 node scripts/build-market-index.mjs 并提交"
+            exit 1
+          }

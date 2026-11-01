@@ -1,0 +1,3 @@
+# 官方参考生成器（apps/plugin-market-generator）的输入清单
+# 用法：pnpm --filter @deepseek-ai/dsh-plugin-market-generator start --input plugins.txt --output site/index.json --title "Optimize AI Reply plugin source"
+dsh-plugin-optimize-ai-reply

@@ -1,0 +1,97 @@
+{
+  "format": 1,
+  "title": {
+    "en": "Optimize AI Reply plugin source",
+    "zh": "优化 AI 回复插件源"
+  },
+  "description": {
+    "en": "Market index for dsh-plugin-optimize-ai-reply: local density scanner, five-layer verification, closed-loop rescan.",
+    "zh": "dsh-plugin-optimize-ai-reply 的市场索引：本地密度扫描、五层校验、闭环复扫。"
+  },
+  "metadata": {
+    "categories": {
+      "writing": {
+        "title": {
+          "en": "Writing",
+          "zh": "写作"
+        }
+      },
+      "tools": {
+        "title": {
+          "en": "Tools",
+          "zh": "工具"
+        }
+      }
+    },
+    "labels": {
+      "local-first": {
+        "title": {
+          "en": "Local-first",
+          "zh": "本地优先"
+        }
+      },
+      "bilingual": {
+        "title": {
+          "en": "Bilingual",
+          "zh": "中英双语"
+        }
+      },
+      "zero-network": {
+        "title": {
+          "en": "Zero-network scan",
+          "zh": "扫描零网络"
+        }
+      }
+    },
+    "sortKeys": {
+      "publishDate": {
+        "title": {
+          "en": "Publish date",
+          "zh": "发布日期"
+        },
+        "order": "desc"
+      }
+    }
+  },
+  "plugins": [
+    {
+      "name": "dsh-plugin-optimize-ai-reply",
+      "title": {
+        "en": "Optimize AI Reply",
+        "zh": "优化 AI 回复"
+      },
+      "description": {
+        "en": "Strips AI-flavor from LLM text: local density scanner with human baselines, five-layer fact/strength/safety verification, closed-loop rescan, and a 54-rule regression corpus. Facts, hedging strength, and safety notes are never lost.",
+        "zh": "把大模型输出改成读起来像人写的：人类基线密度扫描、五层校验（事实/强度/安全/结构）、闭环复扫、54 条规则回归语料。事实、论断强度、安全信息零损失。"
+      },
+      "icon": "data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAIAAAACACAYAAADDPmHLAAADhUlEQVR4nO2c0U3dMBhGTdU9uG+sQIXUaWADxmCDMg1SBCv0LUxC5YdKFRJNbP/2/9vfOa+o96o5J45v7CQlAAAAAAAAAFDhyuNLr2/vPzy+dwbe356HOhnyZQiPG0TXD0d8/BC6fCji5wnB9MMQP18I35IRyB+L1fE2CQD5Plgc9+YAkO9L6/FvCgD5MWjxUB0A8mNR66MqAOTHpMZLcQDIj02pH7OfgTAnRQFw9s9BiSdGgCDsT79dvvd0AJz9/eVbRnDWFyOAM5+ljx4JTgXA2d+Hr2RbRXDGGyOAE0eS899HjAYE4ECJ2N4REMBgaoT2jOAwAK7/drSIrP23R/4YASbh8njT5XMJYIKzv5f8DAEIy88QgLD8DAEIy898T47sr7/Ssmw/w8t3HQGQ7y/fLQDkx2F4AMj/D3cvaTRMAgNc873kZwhAWH6GAITlZwhAWL5LAJcfD2kJNnv5HsfGZQSYPoJtDfmul4BpI9jWke9+K3jGCPan1HiXL9b/mUngYos7pRCAsPwMAQjLzxCAsPwMAQjLzxCAsPwMAQR6VNsDAjCWP9PZnyEAYfkZAhCWnyGApCs/Ix/ALiw/o/1cwNa+sre/zr0opvtcQKDdPLvjseC5gCBbubwi0HwuoOXsv3tZ6tjoTQKDyvdCKwDkCweAfOEAkC/8XMBE8i88FxDst/5AeC5g4Rs9R/BcQMj7+w9JgeUmgeqLO9IBIF84AOQLB4B84QCQLx5ACxexCd9yAag8vNGTaQNAvnAAyBcOAPnCASBfeVt447Kuxfbtmd9tNPe28GDLunuEja0y28KDLuvui0QQe1t4UPkrRRB3Ehhc/irEDAD5wgEgXzgA5AtvC59Q/mWB+wExXhePfDfmf108Z/7cr4tvv78//zAsOwlkcUd5LYDdPMJrAcgXXgtAvm4AyBcOQOkN3EsF8P72fGXxRS3bsNnCXc+Rv6GXgBqRyF9tLaAgAuSvuhbweHMoF/mBArCaB5yVjHwbznhz3w/wWTbyx3I6gF6jwL/SkW/HWV/uI8BfkO9DUQA9RwGwo8RTmBEAfCgOgFEgNqV+qkYAIohJjZfqSwARxKLWR9McgAhi0OKheRJIBL60Hn+TXwFE4IPFcTf7GUgEY7E63l1u7Fzf3n/0+FxI5ida1zt7hGBHrxF2yK1dQoh7aXW5t08QX8NcCgAAAAAAAFI//gAV3o/OB0VcsgAAAABJRU5ErkJggg==",
+      "author": "Optimize AI Reply contributors",
+      "homepage": "https://github.com/XINGMENG2333/dsh-plugin-optimize-ai-reply#readme",
+      "repository": {
+        "url": "https://github.com/XINGMENG2333/dsh-plugin-optimize-ai-reply"
+      },
+      "metadata": {
+        "category": "writing",
+        "labels": [
+          "local-first",
+          "bilingual",
+          "zero-network"
+        ]
+      },
+      "versions": [
+        {
+          "version": "2.4.1",
+          "publishTimestamp": 1793473500,
+          "source": {
+            "type": "git",
+            "url": "https://github.com/XINGMENG2333/dsh-plugin-optimize-ai-reply",
+            "commit": "4523c4632f00b4e531b83fb0f02df38e33d87c39"
+          },
+          "engines": {
+            "dsh": ">=0.2.0"
+          }
+        }
+      ]
+    }
+  ]
+}

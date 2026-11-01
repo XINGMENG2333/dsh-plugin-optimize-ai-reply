@@ -1,0 +1,99 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>优化 AI 回复 · 设置</title>
+  <link rel="stylesheet" href="panel.css" />
+</head>
+<body>
+  <div class="options-wrap">
+    <h1>优化 AI 回复 · Optimize AI Reply 设置</h1>
+    <div id="savedFlag" class="status"></div>
+
+    <h2>改写模型 API</h2>
+    <div class="grid2">
+      <div class="field">
+        <label for="cfgApiKey">API Key（password 型，仅存于 chrome.storage.sync）</label>
+        <input id="cfgApiKey" type="password" placeholder="sk-..." autocomplete="off" />
+      </div>
+      <div class="field">
+        <label for="cfgBaseUrl">Base URL</label>
+        <input id="cfgBaseUrl" type="text" placeholder="https://api.openai.com/v1" />
+      </div>
+      <div class="field">
+        <label for="cfgApiType">接口类型</label>
+        <select id="cfgApiType">
+          <option value="openai">openai（/chat/completions）</option>
+          <option value="anthropic">anthropic（/v1/messages）</option>
+        </select>
+      </div>
+      <div class="field">
+        <label for="cfgModelName">改写模型名</label>
+        <input id="cfgModelName" type="text" placeholder="gpt-4o / claude-sonnet-4-5 …" />
+      </div>
+      <div class="field">
+        <label for="cfgTimeout">调用超时（秒）</label>
+        <input id="cfgTimeout" type="number" min="10" max="600" step="10" />
+      </div>
+      <div class="field">
+        <label for="cfgThreshold">触发阈值（人类基线 × N，默认 2）</label>
+        <input id="cfgThreshold" type="number" min="1" max="10" step="0.5" />
+      </div>
+    </div>
+
+    <h2>行为开关</h2>
+    <div class="check-row"><input id="cfgAllowTodo" type="checkbox" /><label for="cfgAllowTodo">允许【待补】标记（关闭后改写模型只输出【需作者确认】）</label></div>
+    <div class="check-row"><input id="cfgShowWatch" type="checkbox" /><label for="cfgShowWatch">展示【观察项】</label></div>
+    <div class="check-row"><input id="cfgL1" type="checkbox" /><label for="cfgL1">L1 生成侧提示词注入（一键可关）</label></div>
+
+    <h2>单规则开关（扫描前生效；关闭的规则完全不参与判定）</h2>
+    <div class="rule-toggles" id="ruleToggles"></div>
+    <div class="btn-row">
+      <button id="btnEnableAll" class="btn">全部启用</button>
+      <button id="btnDisableB" class="btn">只关 B 组（共识特征）</button>
+    </div>
+
+    <h2>规则体检与缓存</h2>
+    <div class="btn-row">
+      <button id="btnRulecheck" class="btn">跑规则体检（内置 40 段真人 + 20 段 AI 语料）</button>
+      <button id="btnClearCache" class="btn">清空改写缓存</button>
+      <button id="btnRestore" class="btn btn-danger">恢复默认</button>
+    </div>
+    <div id="rulecheckArea" hidden>
+      <div id="rulecheckSummary" class="banner info"></div>
+      <table class="deai-table" id="rulecheckTable">
+        <thead>
+          <tr><th>规则</th><th class="num">人类误报率</th><th class="num">检出率</th><th>建议</th></tr>
+        </thead>
+        <tbody></tbody>
+      </table>
+    </div>
+    <div id="cacheLine" class="status"></div>
+
+    <h2>规则时效</h2>
+    <table class="deai-table" id="asOfTable">
+      <thead>
+        <tr><th>规则</th><th>组别</th><th>证据等级</th><th>as_of</th><th>状态</th></tr>
+      </thead>
+      <tbody></tbody>
+    </table>
+
+    <div class="privacy">
+      隐私说明：扫描全程本地完成；只有点「改写」时文本会发给你配置的模型 API；缓存命中不重复计费；不上传任何数据到第三方。
+    </div>
+    <div id="toast"></div>
+  </div>
+
+  <!-- 设置页也加载 core：规则开关展示 + 规则体检需要 -->
+  <!-- 加载顺序：rewrite.js 在加载时捕获 DeaiRescan，故 rescan.js 必须排在 rewrite.js 之前 -->
+  <script src="../core/engine.js"></script>
+  <script src="../core/scan.js"></script>
+  <script src="../core/verify.js"></script>
+  <script src="../core/prompts.js"></script>
+  <script src="../core/rescan.js"></script>
+  <script src="../core/rewrite.js"></script>
+  <script src="../core/rulecheck.js"></script>
+  <script src="options.js"></script>
+</body>
+</html>

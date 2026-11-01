@@ -1,0 +1,375 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>优化 AI 回复插件 · Demo（本地扫描，零网络）</title>
+<style>
+  :root {
+    --bg: #f6f7f9; --fg: #1c2330; --card: #ffffff; --line: #d8dce4;
+    --accent: #2f6fed; --ok: #2e9e5b; --watch: #c98a00; --elev: #d9631e; --high: #c62828; --muted: #6b7280;
+  }
+  * { box-sizing: border-box; }
+  body { margin: 0; font: 15px/1.7 system-ui, "Segoe UI", "Microsoft YaHei", sans-serif; background: var(--bg); color: var(--fg); }
+  header { padding: 18px 24px; background: var(--card); border-bottom: 1px solid var(--line); }
+  header h1 { margin: 0 0 4px; font-size: 20px; }
+  header p { margin: 0; color: var(--muted); font-size: 13px; }
+  main { max-width: 1100px; margin: 0 auto; padding: 20px 24px 60px; }
+  .card { background: var(--card); border: 1px solid var(--line); border-radius: 10px; padding: 16px; margin-bottom: 16px; }
+  .row { display: flex; gap: 12px; flex-wrap: wrap; align-items: center; }
+  label { font-size: 13px; color: var(--muted); }
+  select, input[type=text], input[type=password], input[type=number], textarea {
+    font: inherit; padding: 6px 8px; border: 1px solid var(--line); border-radius: 6px; background: #fff; color: var(--fg);
+  }
+  textarea { width: 100%; min-height: 220px; resize: vertical; }
+  button {
+    font: inherit; padding: 7px 14px; border-radius: 6px; border: 1px solid var(--accent);
+    background: var(--accent); color: #fff; cursor: pointer;
+  }
+  button.secondary { background: #fff; color: var(--accent); }
+  button:disabled { opacity: .5; cursor: default; }
+  table { width: 100%; border-collapse: collapse; font-size: 13px; }
+  th, td { border-bottom: 1px solid var(--line); padding: 6px 8px; text-align: left; vertical-align: top; }
+  .lv-normal { color: var(--muted); } .lv-watch { color: var(--watch); } .lv-elevated { color: var(--elev); } .lv-high { color: var(--high); font-weight: 600; }
+  .bar-wrap { position: relative; height: 12px; background: #eef1f5; border-radius: 6px; min-width: 140px; overflow: hidden; }
+  .bar-fill { position: absolute; left: 0; top: 0; bottom: 0; background: var(--accent); border-radius: 6px; }
+  .bar-human { position: absolute; top: -2px; bottom: -2px; width: 2px; background: var(--ok); }
+  .bar-ai { position: absolute; top: -2px; bottom: -2px; width: 2px; background: var(--high); }
+  mark[data-rule] { background: #ffe9c9; border-bottom: 2px solid var(--elev); padding: 0 1px; }
+  mark.lv-high { background: #ffd6d6; border-color: var(--high); }
+  mark.lv-watch { background: #fff6d9; border-color: var(--watch); }
+  .tag { display: inline-block; font-size: 11px; border: 1px solid var(--line); border-radius: 99px; padding: 0 8px; margin-left: 6px; color: var(--muted); }
+  .note { font-size: 12px; color: var(--muted); }
+  .alert { padding: 10px 12px; border-radius: 8px; margin: 10px 0; font-size: 13px; }
+  .alert.warn { background: #fff7e0; border: 1px solid #e8ce87; }
+  .alert.err { background: #ffecec; border: 1px solid #e7a8a8; }
+  .alert.ok { background: #e9f7ee; border: 1px solid #a7d8b8; }
+  details { margin: 8px 0; }
+  summary { cursor: pointer; font-weight: 600; }
+  .grid2 { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; }
+  @media (max-width: 800px) { .grid2 { grid-template-columns: 1fr; } }
+  footer { text-align: center; color: var(--muted); font-size: 12px; padding: 20px; }
+</style>
+</head>
+<body>
+<header>
+  <h1>优化 AI 回复 · Demo</h1>
+  <p>本地扫描零网络（L2）；改写需自备模型 API Key（L3→L4→L5 全链校验，失败自动回退原文）。规则数字出处见 README。</p>
+</header>
+<main>
+  <div class="card">
+    <div class="row" style="margin-bottom:10px">
+      <div><label>文体</label><br><select id="register"></select></div>
+      <div><label>出稿模型</label><br><select id="model"></select></div>
+      <div><label>触发阈值（人类基线 × N）</label><br><input id="threshold" type="number" min="1" max="10" step="0.5" value="2" style="width:90px"></div>
+      <div style="flex:1"></div>
+      <button id="btnScan">① 扫描（本地）</button>
+    </div>
+    <textarea id="input" placeholder="把 AI 输出粘贴到这里。示例：&#10;综上所述，这一突破标志着行业进入了新的高度。以下几种情况：&#10;- 配置错误&#10;- 权限不足&#10;- 磁盘满了&#10;说白了，这不是效率问题，而是流程设计的问题。"></textarea>
+    <div class="row" style="margin-top:10px">
+      <button class="secondary" id="btnSample">填入示例文本</button>
+      <button class="secondary" id="btnClear">清空</button>
+    </div>
+    <div id="scanAlert"></div>
+    <div id="scanSummary"></div>
+  </div>
+
+  <div class="card" id="highlightCard" style="display:none">
+    <h3 style="margin-top:0">命中高亮</h3>
+    <div id="highlight" style="white-space:pre-wrap"></div>
+  </div>
+
+  <div class="card" id="statsCard" style="display:none">
+    <h3 style="margin-top:0">特征明细 <span class="tag">密度 vs 基线（绿=人类，红=AI）</span></h3>
+    <div style="overflow-x:auto"><table id="statsTable">
+      <thead><tr><th>规则</th><th>命中</th><th>密度</th><th>人类</th><th>AI</th><th>倍率</th><th>判断</th><th>对照条</th><th>建议</th></tr></thead>
+      <tbody></tbody>
+    </table></div>
+    <details><summary>【观察项】命中未达阈值（默认不改）</summary><div id="watchlist"></div></details>
+    <details><summary>format 指标（只展示不判定）</summary><div id="formatBox"></div></details>
+  </div>
+
+  <div class="card">
+    <h3 style="margin-top:0">② 改写（可选，出网到你自己配置的 API）</h3>
+    <div class="row">
+      <div><label>API Base URL</label><br><input id="baseUrl" type="text" value="https://api.openai.com/v1" style="width:260px"></div>
+      <div><label>API Key</label><br><input id="apiKey" type="password" placeholder="sk-..." style="width:220px"></div>
+      <div><label>模型名</label><br><input id="modelName" type="text" value="gpt-4o" style="width:150px"></div>
+      <div style="flex:1"></div>
+      <button id="btnRewrite">③ 改写（含校验+闭环）</button>
+    </div>
+    <p class="note">隐私：扫描全程本地；仅点「改写」时把文本发给你配置的 API。校验不过、复扫未改善、超时、解析失败一律回退原文。</p>
+    <div id="rewriteAlert"></div>
+    <div class="grid2">
+      <div>
+        <h4>终稿</h4>
+        <textarea id="output" style="min-height:180px" readonly></textarea>
+        <div class="row" style="margin-top:8px">
+          <button class="secondary" id="btnCopy">复制终稿</button>
+          <button class="secondary" id="btnRollback">回退原文</button>
+        </div>
+      </div>
+      <div>
+        <h4>改动说明 / 观察项 / 需确认 / 待补</h4>
+        <div id="report"></div>
+      </div>
+    </div>
+    <details><summary>diff（原文 → 终稿，词级）</summary><div id="diff" style="white-space:pre-wrap"></div></details>
+  </div>
+
+  <div class="card">
+    <h3 style="margin-top:0">规则体检（内置回归语料）</h3>
+    <button class="secondary" id="btnRulecheck">跑 rulecheck</button>
+    <div id="rulecheckOut" style="overflow-x:auto"></div>
+  </div>
+</main>
+<footer>优化 AI 回复插件 v2.0 · demo 页不依赖扩展环境，直接加载 src/core/* · 规则基线出处：lieflat-less-ai-tone / chinese-de-ai-writing / Pangram / sloptells / CCL 2023</footer>
+
+<script src="../src/core/engine.js"></script>
+<script src="../src/core/scan.js"></script>
+<script src="../src/core/verify.js"></script>
+<script src="../src/core/prompts.js"></script>
+<script src="../src/core/rescan.js"></script>
+<script src="../src/core/rewrite.js"></script>
+<script src="../src/core/rulecheck.js"></script>
+<script>
+"use strict";
+var RULES = null;
+var lastScan = null;
+
+var $ = function (id) { return document.getElementById(id); };
+
+function loadRules() {
+  return fetch("../src/core/rules.json").then(function (r) { return r.json(); }).then(function (j) {
+    RULES = j;
+    window.DEAI_RULES = j;
+    var reg = $("register"), mod = $("model");
+    Object.keys(j.registers).forEach(function (k) {
+      var o = document.createElement("option");
+      o.value = k; o.textContent = j.registers[k].name;
+      if (j.registers[k].default) o.selected = true;
+      reg.appendChild(o);
+    });
+    Object.keys(j.models).forEach(function (k) {
+      var o = document.createElement("option");
+      o.value = k; o.textContent = j.models[k].name;
+      mod.appendChild(o);
+    });
+    mod.value = "unknown";
+  });
+}
+
+function levelText(lv) {
+  return { normal: "正常", watch: "观察项", elevated: "偏高", high: "高" }[lv] || lv;
+}
+
+function renderHighlight(text, stats) {
+  // 收集所有 span 按 level 染色（重叠时取更高 level）
+  var spans = [];
+  stats.forEach(function (st) {
+    (st.spans || []).forEach(function (sp) {
+      spans.push({ start: sp.start, end: sp.end, level: st.level, id: st.id });
+    });
+  });
+  spans.sort(function (a, b) { return a.start - b.start || b.end - a.end; });
+  var rank = { watch: 1, elevated: 2, high: 3 };
+  var out = "";
+  var cursor = 0;
+  spans.forEach(function (sp) {
+    if (sp.start < cursor) return;
+    out += escapeHtml(text.slice(cursor, sp.start));
+    out += '<mark class="lv-' + sp.level + '" data-rule="' + sp.id + '" title="' + sp.id + '">' + escapeHtml(text.slice(sp.start, sp.end)) + "</mark>";
+    cursor = sp.end;
+  });
+  out += escapeHtml(text.slice(cursor));
+  $("highlight").innerHTML = out || "（无命中）";
+}
+
+function escapeHtml(s) {
+  return String(s).replace(/[&<>]/g, function (c) { return { "&": "&amp;", "<": "&lt;", ">": "&gt;" }[c]; });
+}
+
+function doScan() {
+  var text = $("input").value;
+  if (!text.trim()) { alert("先粘贴文本"); return; }
+  var register = $("register").value;
+  var model = $("model").value;
+  var th = parseFloat($("threshold").value) || 2;
+  var res;
+  try {
+    res = DeaiScan.scan(text, register, model, RULES, { thresholdMultiplier: th });
+  } catch (e) {
+    $("scanAlert").innerHTML = '<div class="alert err">本地扫描出错：' + escapeHtml(e.message) + "</div>";
+    return;
+  }
+  lastScan = res;
+  var flag = DeaiScan.documentFlag(res);
+  var notes = "";
+  if (res.meta.modelNote && res.meta.modelHasBaseline === false) {
+    notes += '<div class="alert warn">' + escapeHtml(res.meta.modelNote) + "</div>";
+  }
+  if (res.meta.staleDowngraded && res.meta.staleDowngraded.length) {
+    notes += '<div class="alert warn">⚠ 以下规则已过期，自动降级为观察项（待复核）：' + res.meta.staleDowngraded.join("、") + "</div>";
+  }
+  $("scanAlert").innerHTML = notes;
+  $("scanSummary").innerHTML =
+    '<div class="alert ' + (flag.flagged ? "warn" : "ok") + '">文档判定：' +
+    (flag.flagged ? "有 " + flag.elevated.length + " 项达到阈值（偏高/高）" : "未达阈值，无需改写") +
+    "｜汉字 " + res.meta.hanzi + "，词 " + res.meta.words + "，句 " + res.meta.sentences + "，段 " + res.meta.paragraphs + "</div>";
+
+  renderHighlight(text, res.stats);
+  $("highlightCard").style.display = "";
+
+  var tb = $("statsTable").querySelector("tbody");
+  tb.innerHTML = "";
+  res.stats.forEach(function (st) {
+    if (st.hits === 0 && st.level === "normal") return;
+    var maxScale = Math.max(st.density, st.ai || 0, (st.human || 0) * 3, 0.001);
+    var tr = document.createElement("tr");
+    tr.innerHTML =
+      "<td>" + (st.focus ? "★ " : "") + escapeHtml(st.name) + (st.stale ? ' <span class="tag">过期</span>' : "") + "</td>" +
+      "<td>" + st.hits + "</td><td>" + st.density + "</td><td>" + (st.human === null ? "—" : st.human) + "</td><td>" + (st.ai === null ? "—" : st.ai) + "</td><td>" + (st.ratio || "—") + "</td>" +
+      '<td class="lv-' + st.level + '">' + levelText(st.level) + "</td>" +
+      '<td><div class="bar-wrap"><div class="bar-fill" style="width:' + Math.min(100, (st.density / maxScale) * 100) + '%"></div>' +
+      (st.human !== null ? '<div class="bar-human" style="left:' + Math.min(100, ((st.human * 2) / maxScale) * 100) + '%" title="人类基线×2"></div>' : "") +
+      (st.ai !== null ? '<div class="bar-ai" style="left:' + Math.min(100, (st.ai / maxScale) * 100) + '%" title="AI 基线"></div>' : "") +
+      "</div></td>" +
+      '<td class="note">' + escapeHtml(st.advice || "") + (st.boundary ? '<br><span class="note">边界：' + escapeHtml(st.boundary) + "</span>" : "") + "</td>";
+    tr.style.cursor = "pointer";
+    tr.onclick = function () {
+      renderHighlight(text, res.stats.filter(function (x) { return x.id === st.id; }));
+    };
+    tb.appendChild(tr);
+  });
+  $("statsCard").style.display = "";
+
+  $("watchlist").innerHTML = res.watchlist.length
+    ? "<ul>" + res.watchlist.map(function (w) { return "<li><b>" + escapeHtml(w.name) + "</b>：" + w.hits + " 处（密度 " + w.density + "）</li>"; }).join("") + "</ul>"
+    : "（无）";
+  var f = res.format;
+  $("formatBox").innerHTML =
+    "<ul><li>加粗：" + f.boldCount + "（整句加粗 " + f.boldFullSentenceCount + "）</li>" +
+    "<li>emoji：" + f.emojiCount + "</li><li>标题数：" + f.headingCount + "，列表行占比：" + f.listLineRatio + "</li>" +
+    "<li>段落长度 CV：" + f.paragraphLenCV + "，句长 CV：" + f.sentenceLenCV + "</li>" +
+    "<li>语气词密度：" + f.modalParticleDensity + "/千字，书面词密度：" + f.writtenWordDensity + "/千字</li></ul>" +
+    '<div class="note">格式指标只展示不判定（句长参差是被实测推翻的伪规则）。</div>';
+}
+
+function doRewrite() {
+  var text = $("input").value;
+  if (!text.trim() || !lastScan) { alert("先扫描"); return; }
+  var btn = $("btnRewrite");
+  btn.disabled = true;
+  btn.textContent = "改写中…";
+  $("rewriteAlert").innerHTML = "";
+  DeaiRewrite.rewrite(text, lastScan, {
+    register: $("register").value,
+    model: $("model").value,
+    apiKey: $("apiKey").value,
+    baseUrl: $("baseUrl").value,
+    modelName: $("modelName").value,
+    timeoutMs: 120000,
+    rules: RULES
+  }).then(function (res) {
+    btn.disabled = false;
+    btn.textContent = "③ 改写（含校验+闭环）";
+    if (!res.ok) {
+      $("rewriteAlert").innerHTML = '<div class="alert warn">改写被放弃：' + escapeHtml(res.fallbackReason || "") + "。已回退原文。</div>";
+      $("output").value = text;
+      return;
+    }
+    $("rewriteAlert").innerHTML = '<div class="alert ok">改写完成' + (res.cached ? "（命中缓存，未产生费用）" : "") + "，已通过五层校验与闭环复扫。</div>";
+    $("output").value = res.text;
+    var rep = res.report || { changes: [], watch: [], confirm: [], todo: [] };
+    $("report").innerHTML =
+      "<b>改动说明</b><ul>" + (rep.changes || []).map(function (c) { return "<li>" + escapeHtml(c) + "</li>"; }).join("") + "</ul>" +
+      "<b>【观察项】</b><ul>" + (rep.watch || []).map(function (c) { return "<li>" + escapeHtml(c) + "</li>"; }).join("") + "</ul>" +
+      "<b>【需作者确认】</b><ul>" + (rep.confirm || []).map(function (c) { return "<li>" + escapeHtml(c) + "</li>"; }).join("") + "</ul>" +
+      "<b>【待补】</b><ul>" + (rep.todo || []).map(function (c) { return "<li>" + escapeHtml(c) + "</li>"; }).join("") + "</ul>";
+    $("diff").innerHTML = diffWords(text, res.text);
+  }).catch(function (e) {
+    btn.disabled = false;
+    btn.textContent = "③ 改写（含校验+闭环）";
+    $("rewriteAlert").innerHTML = '<div class="alert err">改写失败已回退：' + escapeHtml(e.message || e) + "</div>";
+    $("output").value = text;
+  });
+}
+
+// 词级 diff（简版 LCS）
+function diffWords(a, b) {
+  var wa = a.match(/[\u4e00-\u9fff]|[A-Za-z0-9]+|\s+|[^\s]/g) || [];
+  var wb = b.match(/[\u4e00-\u9fff]|[A-Za-z0-9]+|\s+|[^\s]/g) || [];
+  var m = wa.length, n = wb.length;
+  if (m * n > 250000) return "（文本过长，diff 略）";
+  var dp = [];
+  for (var i = 0; i <= m; i++) { dp.push(new Array(n + 1).fill(0)); }
+  for (i = m - 1; i >= 0; i--) {
+    for (var j = n - 1; j >= 0; j--) {
+      dp[i][j] = wa[i] === wb[j] ? dp[i + 1][j + 1] + 1 : Math.max(dp[i + 1][j], dp[i][j + 1]);
+    }
+  }
+  var out = "";
+  i = 0; j = 0;
+  while (i < m && j < n) {
+    if (wa[i] === wb[j]) { out += escapeHtml(wa[i]); i++; j++; }
+    else if (dp[i + 1][j] >= dp[i][j + 1]) { out += '<del style="background:#ffdce0">' + escapeHtml(wa[i]) + "</del>"; i++; }
+    else { out += '<ins style="background:#d7f5df">' + escapeHtml(wb[j]) + "</ins>"; j++; }
+  }
+  while (i < m) { out += '<del style="background:#ffdce0">' + escapeHtml(wa[i++]) + "</del>"; }
+  while (j < n) { out += '<ins style="background:#d7f5df">' + escapeHtml(wb[j++]) + "</ins>"; }
+  return out;
+}
+
+function doRulecheck() {
+  var out = $("rulecheckOut");
+  out.textContent = "跑内置语料中…";
+  Promise.all([
+    fetch("../src/corpus/human-zh.json").then(function (r) { return r.json(); }),
+    fetch("../src/corpus/human-en.json").then(function (r) { return r.json(); }),
+    fetch("../src/corpus/ai-zh.json").then(function (r) { return r.json(); }),
+    fetch("../src/corpus/ai-en.json").then(function (r) { return r.json(); })
+  ]).then(function (arr) {
+    var human = arr[0].concat(arr[1]).map(function (d) {
+      return { id: d.id, register: DeaiRulecheck.KIND_REGISTER[d.kind] || "qa", model: "unknown", text: d.text };
+    });
+    var ai = arr[2].concat(arr[3]).map(function (d) {
+      return { id: d.id, register: "qa", model: d.model || "unknown", text: d.text };
+    });
+    var rep = DeaiRulecheck.rulecheck(human, ai, { rules: RULES });
+    var html = '<div class="alert ' + (rep.summary.docFpRate <= 0.05 ? "ok" : "err") + '">文档误报率 ' +
+      (rep.summary.docFpRate * 100).toFixed(1) + "%（" + rep.summary.humanFlaggedDocs + "/" + rep.summary.humanDocs + "，要求 ≤5%）</div>";
+    html += "<table><thead><tr><th>规则</th><th>误报</th><th>AI 检出</th><th>建议</th></tr></thead><tbody>";
+    rep.rules.forEach(function (r) {
+      if (!r.humanFlagged && !r.aiFlagged) return;
+      html += "<tr><td>" + r.id + (r.variantId ? "/" + r.variantId : "") + "</td><td>" + r.humanFlagged + "/" + r.humanDocs + "</td><td>" + r.aiFlagged + "/" + r.aiDocs + "</td><td class='note'>" + escapeHtml(r.suggestion) + "</td></tr>";
+    });
+    html += "</tbody></table>";
+    out.innerHTML = html;
+  }).catch(function (e) {
+    out.textContent = "语料加载失败：" + e.message;
+  });
+}
+
+$("btnScan").onclick = doScan;
+$("btnRewrite").onclick = doRewrite;
+$("btnRulecheck").onclick = doRulecheck;
+$("btnClear").onclick = function () { $("input").value = ""; $("output").value = ""; };
+$("btnSample").onclick = function () {
+  $("input").value =
+    "综上所述，这一突破标志着行业进入了新的高度。以下几种情况：\n- 配置错误\n- 权限不足\n- 磁盘满了\n\n说白了，这不是效率问题，而是流程设计的问题。\n\n关键在于并发数没有跟着调整。";
+};
+$("btnCopy").onclick = function () {
+  navigator.clipboard.writeText($("output").value).then(function () { alert("已复制"); });
+};
+$("btnRollback").onclick = function () {
+  $("output").value = $("input").value;
+  $("report").innerHTML = "";
+  $("rewriteAlert").innerHTML = '<div class="alert ok">已回退到原文。</div>';
+};
+
+loadRules().catch(function (e) {
+  $("scanAlert").innerHTML = '<div class="alert err">rules.json 加载失败：' + escapeHtml(e.message) + "</div>";
+});
+</script>
+</body>
+</html>

@@ -1,0 +1,27 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8" />
+  <title>优化 AI 回复 · Optimize AI Reply</title>
+  <link rel="stylesheet" href="panel.css" />
+</head>
+<body>
+  <div class="popup-wrap">
+    <h1>优化 AI 回复 · Optimize AI Reply</h1>
+    <div class="dim small" id="siteLine">当前站点：检测中…</div>
+
+    <div class="btn-row" style="flex-direction:column; align-items:stretch">
+      <button id="btnOpenPanel" class="btn btn-primary">打开侧栏</button>
+      <button id="btnGrabScan" class="btn">抓取并扫描</button>
+      <button id="btnPromptA" class="btn">注入生成侧提示词</button>
+    </div>
+
+    <div id="status" class="status"></div>
+    <div class="privacy">
+      扫描全程本地完成；只有点「改写」时文本会发给你配置的模型 API；不上传任何数据到第三方。
+    </div>
+  </div>
+
+  <script src="popup.js"></script>
+</body>
+</html>

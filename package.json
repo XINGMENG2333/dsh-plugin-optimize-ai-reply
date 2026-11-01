@@ -1,0 +1,90 @@
+{
+  "name": "dsh-plugin-optimize-ai-reply",
+  "version": "2.4.1",
+  "description": "DeepSeek Harness plugin that optimizes AI replies and strips AI-flavor from LLM text: local density scanner, five-layer fact/strength/safety verification, closed-loop rescan. 优化 AI 回复：本地密度扫描 + 五层校验改写 + 闭环复扫，事实/强度/安全零损失。",
+  "keywords": [
+    "dsh-plugin",
+    "dsh",
+    "deepseek-harness",
+    "optimize-ai-reply",
+    "ai-reply",
+    "ai-writing",
+    "writing",
+    "text-processing",
+    "chrome-extension"
+  ],
+  "license": "MIT",
+  "author": "Optimize AI Reply contributors",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/XINGMENG2333/dsh-plugin-optimize-ai-reply.git"
+  },
+  "homepage": "https://github.com/XINGMENG2333/dsh-plugin-optimize-ai-reply#readme",
+  "type": "commonjs",
+  "main": "index.js",
+  "exports": {
+    ".": {
+      "import": "./index.mjs",
+      "require": "./index.js"
+    },
+    "./client": {
+      "default": "./lib/client.js"
+    },
+    "./package.json": "./package.json",
+    "./rules.json": "./src/core/rules.json"
+  },
+  "files": [
+    "index.js",
+    "index.mjs",
+    "cordis.patch.yml",
+    "src/core/",
+    "src/dsh/",
+    "src/client/",
+    "src/corpus/",
+    "lib/",
+    "assets/icons/",
+    "market/",
+    "README.md",
+    "LICENSE"
+  ],
+  "dsh": {
+    "bundle": {
+      "patch": "./cordis.patch.yml"
+    },
+    "client": {
+      "platform": "web",
+      "inject": [
+        "@deepseek-ai/dsh-client-locale",
+        "@deepseek-ai/dsh-client-ui-settings",
+        "@deepseek-ai/dsh-client-ui-plugin-manager"
+      ]
+    }
+  },
+  "engines": {
+    "node": ">=18",
+    "dsh": ">=0.2.0"
+  },
+  "peerDependencies": {
+    "@deepseek-ai/cordis": "*",
+    "@deepseek-ai/dsh-tools": "*"
+  },
+  "peerDependenciesMeta": {
+    "@deepseek-ai/cordis": {
+      "optional": true
+    },
+    "@deepseek-ai/dsh-tools": {
+      "optional": true
+    }
+  },
+  "scripts": {
+    "test": "node tests/run-tests.js && node tests/acceptance.js && node tests/dsh-plugin.test.js",
+    "test:unit": "node tests/run-tests.js",
+    "test:acceptance": "node tests/acceptance.js",
+    "test:dsh": "node tests/dsh-plugin.test.js",
+    "rulecheck": "node src/core/rulecheck.js",
+    "build": "node build.mjs",
+    "build:client": "node scripts/build-client.js",
+    "pretest": "node scripts/build-client.js",
+    "prepack": "node tests/run-tests.js && node tests/dsh-plugin.test.js"
+  }
+}

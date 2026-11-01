@@ -1,0 +1,122 @@
+[
+  {
+    "id": "H-EN-01",
+    "kind": "forum",
+    "source": "某网络设备论坛家庭组网讨论区回帖",
+    "text": "My router kept dropping the printer every few days and I finally figured out what was going on. The ISP modem was handing out its own DHCP leases on the same subnet as my access point, so devices would flip between gateways and lose each other. I put the modem in bridge mode and turned off its Wi-Fi entirely, and the printer has been solid for three weeks now.\n\nIf yours is doing the same thing, check whether you have two boxes both acting like routers. Mine was the Arris combo unit from the cable company plus my old Netgear running as an access point. It is a surprisingly common setup and it will bite you eventually."
+  },
+  {
+    "id": "H-EN-02",
+    "kind": "techdoc",
+    "source": "某开源项目运维文档的日志轮转章节",
+    "text": "Log rotation runs daily at 03:15 server time. The main service writes to /var/log/relay/relay.log and the rotation config lives in /etc/logrotate.d/relay. Files are kept for 14 days before deletion and the whole directory is capped at 2 GB.\n\nIf the disk fills up anyway, the service refuses to start and exits with code 3. That behavior is deliberate. Partial logs have caused more confusion than missing ones, so we chose to fail loudly.\n\nTo change retention, edit the rotate directive and run logrotate -f /etc/logrotate.d/relay to force one cycle. No restart is needed because the logger reads the config on every write. Compression is on by default and old files rotate to .gz after the first cycle."
+  },
+  {
+    "id": "H-EN-03",
+    "kind": "email",
+    "source": "项目经理发给同事的仓库上线进展邮件",
+    "text": "Hi Dana, quick update on the warehouse rollout. The pilot site went live on Tuesday and the scanners are behaving well so far. We did hit one issue with the label printer spooler dropping jobs when two users print at once. The vendor sent a patch this morning and I will install it tonight during the maintenance window.\n\nThe training deck is in the shared drive under Operations/Rollout. Could you look at the last two slides before Friday? They cover the returns workflow and I want the wording right before it goes out to the site leads.\n\nIf the patch causes trouble I will roll it back before the morning shift starts. Thanks. And tell Marco I owe him coffee for staying late on cutover night."
+  },
+  {
+    "id": "H-EN-04",
+    "kind": "popsci",
+    "source": "某健康科普网站的咖啡因代谢短文",
+    "text": "Caffeine has a half-life of around five to six hours, which is why an afternoon coffee can still be in your system at bedtime. People vary a lot here. Some clear it in three hours and others take nine; genetics plays a role that is not easy to measure at home.\n\nMoving my last cup to before lunch helped me the most. It took about a week before I noticed falling asleep faster. Alcohol is the other sneaky one. A couple of drinks at dinner makes you drowsy, but the second half of the night gets choppy once it wears off.\n\nIf you want to test it, cut caffeine after noon for ten days and keep everything else the same. That is the only way I could tell what was doing what."
+  },
+  {
+    "id": "H-EN-05",
+    "kind": "forum",
+    "source": "某自行车维修论坛异响排查回帖",
+    "text": "Squeaky bottom bracket on a two-year-old bike is almost always dried grease or a loose crank bolt. Before you buy a new one, pull the crank arms off and clean the spindle before you regrease it. Mine turned out fine after twenty minutes with a hex key. New bottom brackets cost real money and half the time they are not the problem.\n\nOne thing people miss: noise travels through the frame, so the creak you hear near the saddle might be coming from the seat post clamp. Put a small amount of grease on the post and torque the clamp to spec. Mine creaked for months and it cost nothing to fix."
+  },
+  {
+    "id": "H-EN-06",
+    "kind": "techdoc",
+    "source": "某支付平台开发者文档的限流与错误码章节",
+    "text": "The rate limit applies per API key and is evaluated over a rolling 60-second window. The default is 120 requests per minute and you can raise it to 600 from the quotas page in the console. When you exceed the limit the API returns 429 with a Retry-After header in seconds.\n\nError codes live in the code field of the response body. The message field is written for humans and its wording may change between releases, so do not branch on it. Three of them get mixed up often. 40003 means the signature timestamp expired and a retry with a fresh timestamp usually works. 40004 means the signature itself is wrong, which normally means the secret was copied incorrectly. 40011 means the key has been revoked and no amount of retrying will help."
+  },
+  {
+    "id": "H-EN-07",
+    "kind": "email",
+    "source": "团队成员之间调整会议时间的邮件",
+    "text": "Hi Tom, can we push our one-on-one to Thursday? The vendor call ran long today and I still owe Priya the migration checklist before end of day. Thursday at 10 works for me and Friday morning is fine too.\n\nAlso, I booked the small conference room for the architecture review on the 18th. It only seats eight, so if you expect more people I will move it upstairs to the big room. Let me know by Monday and I will change the invite.\n\nOne more thing. The quarterly planning deck needs your slides by the 12th. I can cover the budget section if that helps. Ping me if any of that is a problem."
+  },
+  {
+    "id": "H-EN-08",
+    "kind": "popsci",
+    "source": "某园艺杂志网站的室内植物养护科普",
+    "text": "Overwatering kills more houseplants than dry air ever will. If the leaves are yellowing and the soil still feels damp, stop watering and check the roots. Healthy roots look white or light tan and feel firm. Brown, soft roots that smell sour mean root rot, and you need to cut them off before repotting.\n\nThe finger test is still the most reliable method I have used. Push a finger an inch into the soil. If it comes out dry, water until it runs from the drainage holes. Pots without drainage are the main reason people struggle with succulents, because there is nowhere for the excess water to go.\n\nA cheap moisture meter helped me stop guessing during winter, when the soil stays wet for weeks."
+  },
+  {
+    "id": "H-EN-09",
+    "kind": "forum",
+    "source": "某车友论坛空调故障维修经验帖",
+    "text": "2012 Civic with 140k miles on it. The AC started blowing warm at idle last summer. Two shops quoted me a new compressor. It turned out to be a condenser fan that only worked intermittently, so at a stop light there was no airflow over the condenser and the pressure climbed.\n\nThe part was 80 bucks and it took an hour to swap in the driveway. Before you sign off on a compressor, have somebody watch the fan while the AC is running. Mine spun sometimes and not others, which is why the diagnosis kept coming back inconclusive.\n\nSecond owner told me the same thing happened to his and it was the fan relay, so check that too before you spend money."
+  },
+  {
+    "id": "H-EN-10",
+    "kind": "techdoc",
+    "source": "某公司消息队列故障处置手册节选",
+    "text": "When the queue depth climbs past 5000 for more than ten minutes, the on-call engineer should scale the consumer group first and investigate second. The scaling command is in the ops repo under scripts/scale-consumers.sh and takes a target count as its only argument.\n\nDo not restart the broker while messages are still backing up. Last time somebody did that we lost visibility into the backlog and had to replay from the dead letter queue, which took most of a morning. Once depth is back under 500, look for the producer that got deployed around the time the climb started.\n\nEscalate to the platform team if depth keeps rising after scaling. Their runbook is in the wiki under Messaging."
+  },
+  {
+    "id": "H-EN-11",
+    "kind": "email",
+    "source": "技术支持工程师回复用户缺陷报告的邮件",
+    "text": "Hello Mr. Alvarez, thanks for the detailed report. I reproduced the export failure on my side with a 40,000 row worksheet and the fix is already on our staging environment. It will be in the next release, currently scheduled for the 22nd.\n\nIn the meantime, splitting the export into two smaller sheets works. I know that is a clumsy workaround and I would not call it a long term answer. The bug is tracked as CORE-2291. Nothing else in the export flow changed.\n\nI will let you know as soon as the build goes out. If anything else looks wrong with the export dialog, send me a screenshot and I will check it today."
+  },
+  {
+    "id": "H-EN-12",
+    "kind": "forum",
+    "source": "某效率工具论坛笔记软件对比回帖",
+    "text": "Been using both for a year. Obsidian stores plain markdown files locally, so if the app vanished tomorrow my notes would still open in any editor. That is the whole reason I switched. Sync costs me about 40 a year through a third party.\n\nNotion is much better for shared work. The databases and filters beat anything Obsidian offers and my team lives in it. The offline story is weak though. I was on a train last month and could not edit a single page.\n\nIf you write alone and hoard reference material, get Obsidian. If you coordinate with people all day, get Notion. I pay for both and do not regret it."
+  },
+  {
+    "id": "H-EN-13",
+    "kind": "popsci",
+    "source": "某健康科普专栏的久坐腰背痛短文",
+    "text": "Posture gets blamed for desk back pain more than it deserves. Sitting still for long stretches bothers backs more than slouching does, so getting up every half hour matters more than buying an ergonomic chair. I ran a timer for a month and it helped more than the 400 dollar chair did.\n\nCore strength helps too and it does not require a gym program. Twenty minutes of walking plus a couple of bodyweight sessions a week made a visible difference for me after about a month.\n\nIf the pain runs down one leg, or comes with numbness or changes in bladder control, see a doctor. That pattern is different from ordinary muscle ache and needs looking at."
+  },
+  {
+    "id": "H-EN-14",
+    "kind": "techdoc",
+    "source": "某开源软件安装文档节选",
+    "text": "Install the agent with the package manager. Building from source works too, but then you are signing up to update it by hand.\n\nOn Debian-based systems add the repository key first, then the repository entry. The key rotates every 90 days and apt refuses to refresh without it. After installation the service starts automatically and registers with the control plane within a minute. The repository entry itself is stable and rarely changes.\n\nVerify the node with relayctl status. A healthy node reports ready and the heartbeat line updates every 30 seconds. If the status stays at joining for more than five minutes, check outbound TCP 8443, because that is the port registration uses."
+  },
+  {
+    "id": "H-EN-15",
+    "kind": "email",
+    "source": "面试官发给招聘经理的面试反馈邮件",
+    "text": "Hi Grace, here is my feedback from today's interview. The coding exercise went well. The candidate tested edge cases unprompted and explained the tradeoffs in the caching layer clearly.\n\nThe system design section was thinner. There was little discussion of failure modes, and the answer on consistency leaned on the database without much detail. I would have liked to hear how the design behaves when a node goes away.\n\nOn the plus side, the questions about our incident process were sharp and clearly researched. Overall the conversation was easy and never defensive. My rating is a lean hire, but I would like to hear your read before I submit the scorecard tomorrow."
+  },
+  {
+    "id": "H-EN-16",
+    "kind": "forum",
+    "source": "某摄影论坛新手购机建议回帖",
+    "text": "Coming from a phone, the biggest surprise was how much lens choice matters and how little the body does. I bought a used XT-30 with a 35mm f2 and my photos improved more than any phone upgrade ever gave me.\n\nDo not blow the budget on the body. Buy a decent prime and shoot in aperture priority for a month before you decide whether you need a zoom. I spent two years convinced I needed a 24-70 and hardly touched it once I had the prime.\n\nMy friend did the same and he agrees. Used glass holds value well. If you hate a lens, sell it and you are out maybe 10 percent."
+  },
+  {
+    "id": "H-EN-17",
+    "kind": "email",
+    "source": "采购专员发给供应商的催货邮件",
+    "text": "Hi Sandra, following up on the August shipment. The contract says delivery on the 20th and our warehouse has not received a dispatch notice yet. Could you confirm today whether it is leaving on time?\n\nIf there is a delay, a realistic date would help me plan. The line stops without those parts and the last late shipment cost us two days of production in July. If it ships this week, send the tracking number and I can relax a little.\n\nAlso, please confirm the alternate part number from the spec sheet. Purchasing is waiting on that before they can place the next order. Our stock of spare housings runs out around the 24th."
+  },
+  {
+    "id": "H-EN-18",
+    "kind": "popsci",
+    "source": "某烹饪科普博客的美拉德反应短文",
+    "text": "Browning happens faster in a dry pan because water caps the temperature at 100C until it boils off. That is why crowding the pan makes meat steam instead of brown. Leave space between pieces and work in batches when you are cooking more than a couple of servings.\n\nSalting early is worth the wait. Salt drawn into the meat seasons it through, while salt thrown on at the end stays on the surface. For a steak, salting 40 minutes ahead gives you the best of both, since the moisture gets reabsorbed before the meat hits the heat.\n\nA cheap infrared thermometer taught me how much I was guessing about pan temperature."
+  },
+  {
+    "id": "H-EN-19",
+    "kind": "forum",
+    "source": "某编程论坛自学经验分享回帖",
+    "text": "Self-taught here, eighteen months in. Tutorials were a trap for me. I finished a dozen of them and still could not start a project on my own. I finally got somewhere after picking something I actually wanted (a small expense tracker) and building it badly from scratch.\n\nThe debugging skills came from the second project, not the first. When nothing works and you have to read stack traces for three hours, that is when it clicks. Keep the projects small enough to finish. A finished ugly app teaches you more than a half-built elegant one.\n\nAlso, read other people's code once a week. It is boring and it teaches you things no tutorial covers."
+  },
+  {
+    "id": "H-EN-20",
+    "kind": "email",
+    "source": "团队内部的会议纪要邮件",
+    "text": "Hi all, short recap from this morning. We agreed to keep the current schema and add the missing columns in a migration on the 14th. Ravi will write the migration script and I will review it. The open question is whether to backfill historical rows or leave them null, and we said we would decide after seeing how big the table is.\n\nWe also moved the release date to the 21st because QA needs a full week with the new schema. Two action items. Ravi sends the script by Friday and I check with support about the customer who reported duplicate invoices.\n\nIf I missed anything, reply to this thread and I will update the notes."
+  }
+]
